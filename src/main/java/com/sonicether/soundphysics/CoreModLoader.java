@@ -22,8 +22,15 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin.MCVersion;
 public class CoreModLoader implements IFMLLoadingPlugin {
 
 	@Override
+	public String getAccessTransformerClass() {
+		return null;
+	}
+
+	@Override
 	public String[] getASMTransformerClass() {
-		return new String[] { CoreModInjector.class.getName() };
+		return new String[]{
+				CoreModInjector.class.getName()
+		};
 	}
 
 	@Override
@@ -38,11 +45,6 @@ public class CoreModLoader implements IFMLLoadingPlugin {
 
 	@Override
 	public void injectData(final Map<String, Object> data) {
-	}
-
-	@Override
-	public String getAccessTransformerClass() {
-		return null;
 	}
 
 }

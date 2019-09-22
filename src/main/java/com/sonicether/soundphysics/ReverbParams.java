@@ -15,19 +15,6 @@ package com.sonicether.soundphysics;
 
 public class ReverbParams {
 
-	public float decayTime; // min: 0.1f max: 10.0f
-	public float density; // min: 0.0f max: 1.0f
-	public float diffusion; // min: 0.0f max: 1.0f
-	public float gain; // min: 0.0f max: 1.0f
-	public float gainHF; // min: 0.0f max: 1.0f
-	public float decayHFRatio; // min: 0.1f max: 2.0f
-	public float reflectionsGain; // min: 0.1f max: 3.16f
-	public float reflectionsDelay; // min: 0.0f max: 0.3f
-	public float lateReverbGain; // min: 0.0f max: 10.0f
-	public float lateReverbDelay; // min: 0.0f max: 0.1f
-	public float airAbsorptionGainHF; // min: 0.892f max: 1.0f
-	public float roomRolloffFactor; // min: 0.0f max: 10.0f
-
 	public static ReverbParams getReverb0() {
 		final ReverbParams r = new ReverbParams();
 		r.decayTime = 0.15f;
@@ -45,7 +32,6 @@ public class ReverbParams {
 
 		return r;
 	}
-
 	public static ReverbParams getReverb1() {
 		final ReverbParams r = new ReverbParams();
 		r.decayTime = 0.55f;
@@ -63,7 +49,6 @@ public class ReverbParams {
 
 		return r;
 	}
-
 	public static ReverbParams getReverb2() {
 		final ReverbParams r = new ReverbParams();
 		r.decayTime = 1.68f;
@@ -81,7 +66,6 @@ public class ReverbParams {
 
 		return r;
 	}
-
 	public static ReverbParams getReverb3() {
 		final ReverbParams r = new ReverbParams();
 		r.decayTime = 4.142f;
@@ -99,5 +83,21 @@ public class ReverbParams {
 
 		return r;
 	}
+	public float airAbsorptionGainHF; // min: 0.892f max: 1.0f
+	public float decayHFRatio; // min: 0.1f max: 2.0f
+	public float decayTime; // min: 0.1f max: 10.0f
+	public float density; // min: 0.0f max: 1.0f
+	public float diffusion; // min: 0.0f max: 1.0f
+	public float gain; // min: 0.0f max: 1.0f
+	public float gainHF; // min: 0.0f max: 1.0f
+	public float lateReverbDelay; // min: 0.0f max: 0.1f
+
+	public float lateReverbGain; // min: 0.0f max: 10.0f
+
+	public float reflectionsDelay; // min: 0.0f max: 0.3f
+
+	public float reflectionsGain; // min: 0.1f max: 3.16f
+
+	public float roomRolloffFactor; // min: 0.0f max: 10.0f
 
 }
