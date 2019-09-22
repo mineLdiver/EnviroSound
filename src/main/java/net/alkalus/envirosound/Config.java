@@ -74,6 +74,7 @@ public class Config {
 	public static float stoneReflectivity;
 	public static float underwaterFilter;
 	public static float woodReflectivity;
+	public static float maxDistance;
 	static {
 		instance = new Config();
 	}
@@ -174,6 +175,8 @@ public class Config {
 		Config.noteBlockEnable = this.forgeConfig.getBoolean(
 				"Affect Note Blocks", Config.categoryGeneral, true, "If true, note blocks will be processed."
 				);
+		Config.maxDistance = this.forgeConfig.getFloat
+				("Max ray distance", categoryGeneral, 256.0f, 1.0f, 8192.0f, "How far the rays should be traced.");
 
 		// performance
 		Config.skipRainOcclusionTracing = this.forgeConfig.getBoolean(
@@ -243,9 +246,9 @@ public class Config {
 				"Injector Logging", Config.categoryMisc, false, "If true, Logs debug info about the injector"
 				);
 
+		EnviroSound.applyConfigChanges();
 		if (this.forgeConfig.hasChanged()) {
 			this.forgeConfig.save();
-			EnviroSound.applyConfigChanges();
 		}
 	}
 
