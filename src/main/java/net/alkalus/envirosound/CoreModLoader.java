@@ -11,14 +11,14 @@
  * Copyright (c) 2017, 2018 AlkCorp.
  * Contributors: https://github.com/alkcorp/Sound-Physics/graphs/contributors
  *******************************************************************************/
-package com.sonicether.soundphysics;
+package net.alkalus.envirosound;
 
 import java.util.Map;
 
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin.MCVersion;
 
-@MCVersion(value = SoundPhysics.mcVersion)
+@MCVersion(value = EnviroSound.mcVersion)
 public class CoreModLoader implements IFMLLoadingPlugin {
 
 	@Override

@@ -11,7 +11,7 @@
  * Copyright (c) 2017, 2019 AlkCorp.
  * Contributors: https://github.com/alkcorp/Sound-Physics/graphs/contributors
  *******************************************************************************/
-package com.sonicether.soundphysics;
+package net.alkalus.envirosound;
 
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -192,7 +192,7 @@ public class CoreModInjector implements IClassTransformer {
 			final InsnList toInject = new InsnList();
 			toInject.add(
 					new MethodInsnNode(
-							Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics", "init", "()V", false
+							Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound", "init", "()V", false
 							)
 					);
 
@@ -209,7 +209,7 @@ public class CoreModInjector implements IClassTransformer {
 				toInject.add(new VarInsnNode(Opcodes.ALOAD, 6));
 				toInject.add(
 						new MethodInsnNode(
-								Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics", "setLastSoundCategory", "(Lw;)V", false
+								Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound", "setLastSoundCategory", "(Lw;)V", false
 								)
 						);
 
@@ -227,7 +227,7 @@ public class CoreModInjector implements IClassTransformer {
 						);
 				toInject.add(
 						new MethodInsnNode(
-								Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics", "setLastSoundName", "(Ljava/lang/String;)V", false
+								Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound", "setLastSoundName", "(Ljava/lang/String;)V", false
 								)
 						);
 
@@ -239,7 +239,7 @@ public class CoreModInjector implements IClassTransformer {
 				toInject = new InsnList();
 				toInject.add(
 						new FieldInsnNode(
-								Opcodes.GETSTATIC, "com/sonicether/soundphysics/SoundPhysics", "globalVolumeMultiplier", "F"
+								Opcodes.GETSTATIC, "net/alkalus/envirosound/EnviroSound", "globalVolumeMultiplier", "F"
 								)
 						);
 				toInject.add(new InsnNode(Opcodes.FMUL));
@@ -307,7 +307,7 @@ public class CoreModInjector implements IClassTransformer {
 							);
 					toInject.add(
 							new MethodInsnNode(
-									Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics", "onPlaySound", "(FFFI)V", false
+									Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound", "onPlaySound", "(FFFI)V", false
 									)
 							);
 
@@ -334,13 +334,13 @@ public class CoreModInjector implements IClassTransformer {
 
 						toInject.add(
 								new MethodInsnNode(
-										Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics", "onLoadSound", "(Lpaulscode/sound/SoundBuffer;Ljava/lang/String;)Lpaulscode/sound/SoundBuffer;", false
+										Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound", "onLoadSound", "(Lpaulscode/sound/SoundBuffer;Ljava/lang/String;)Lpaulscode/sound/SoundBuffer;", false
 										)
 								);
 
 						toInject.add(new VarInsnNode(Opcodes.ASTORE, 4));
 						// buffer =
-						// onLoadSound(SoundPhysics.buffer,filenameURL.getFilename());
+						// onLoadSound(EnviroSound.buffer,filenameURL.getFilename());
 
 						// Target method: loadSound
 						bytes = patchMethodInClass(
@@ -354,7 +354,7 @@ public class CoreModInjector implements IClassTransformer {
 
 						toInject.add(
 								new MethodInsnNode(
-										Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics", "onLoadSound", "(Lpaulscode/sound/SoundBuffer;Ljava/lang/String;)Lpaulscode/sound/SoundBuffer;", false
+										Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound", "onLoadSound", "(Lpaulscode/sound/SoundBuffer;Ljava/lang/String;)Lpaulscode/sound/SoundBuffer;", false
 										)
 								);
 
@@ -373,12 +373,12 @@ public class CoreModInjector implements IClassTransformer {
 
 							toInject.add(
 									new FieldInsnNode(
-											Opcodes.GETSTATIC, "com/sonicether/soundphysics/SoundPhysics", "attenuationModel", "I"
+											Opcodes.GETSTATIC, "net/alkalus/envirosound/EnviroSound", "attenuationModel", "I"
 											)
 									);
 							toInject.add(
 									new FieldInsnNode(
-											Opcodes.GETSTATIC, "com/sonicether/soundphysics/SoundPhysics", "globalRolloffFactor", "F"
+											Opcodes.GETSTATIC, "net/alkalus/envirosound/EnviroSound", "globalRolloffFactor", "F"
 											)
 									);
 
@@ -394,10 +394,10 @@ public class CoreModInjector implements IClassTransformer {
 								final InsnList toInject = new InsnList();
 
 								// Multiply sound distance volume play decision by
-								// SoundPhysics.soundDistanceAllowance
+								// EnviroSound.soundDistanceAllowance
 								toInject.add(
 										new FieldInsnNode(
-												Opcodes.GETSTATIC, "com/sonicether/soundphysics/SoundPhysics", "soundDistanceAllowance", "D"
+												Opcodes.GETSTATIC, "net/alkalus/envirosound/EnviroSound", "soundDistanceAllowance", "D"
 												)
 										);
 								toInject.add(new InsnNode(Opcodes.DMUL));
@@ -415,7 +415,7 @@ public class CoreModInjector implements IClassTransformer {
 
 			// Offset entity sound by their eye height
 			toInject.add(new VarInsnNode(Opcodes.ALOAD, 1));
-			toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics",
+			toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound",
 					"calculateEntitySoundOffset", "(Lvg;Lqe;)D", false));
 			toInject.add(new InsnNode(Opcodes.DADD));
 			toInject.add(new VarInsnNode(Opcodes.ALOAD, 0));
@@ -433,7 +433,7 @@ public class CoreModInjector implements IClassTransformer {
 									toInject.add(new VarInsnNode(Opcodes.ALOAD, 2));
 									toInject.add(
 											new MethodInsnNode(
-													Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics", "calculateEntitySoundOffset", "(Lsa;Ljava/lang/String;)D", false
+													Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound", "calculateEntitySoundOffset", "(Lsa;Ljava/lang/String;)D", false
 													)
 											);
 									toInject.add(new InsnNode(Opcodes.DADD));
@@ -446,7 +446,7 @@ public class CoreModInjector implements IClassTransformer {
 
 									/*// Offset entity sound by their eye height
 			toInject.add(new VarInsnNode(Opcodes.ALOAD, 2));
-			toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics",
+			toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound",
 					"calculateEntitySoundOffsetPlayer", "(Lyz;Ljava/lang/String;)D", false));
 			toInject.add(new InsnNode(Opcodes.DADD));
 			toInject.add(new VarInsnNode(Opcodes.ALOAD, 1));
@@ -481,7 +481,7 @@ public class CoreModInjector implements IClassTransformer {
 
 										toInject.add(
 												new MethodInsnNode(
-														Opcodes.INVOKESTATIC, "com/sonicether/soundphysics/SoundPhysics", "onPlaySoundAL", "(FFFI)V", false
+														Opcodes.INVOKESTATIC, "net/alkalus/envirosound/EnviroSound", "onPlaySoundAL", "(FFFI)V", false
 														)
 												);
 
@@ -494,7 +494,7 @@ public class CoreModInjector implements IClassTransformer {
 
 										toInject.add(
 												new FieldInsnNode(
-														Opcodes.GETSTATIC, "com/sonicether/soundphysics/SoundPhysics", "soundDistanceAllowance", "D"
+														Opcodes.GETSTATIC, "net/alkalus/envirosound/EnviroSound", "soundDistanceAllowance", "D"
 														)
 												);
 										toInject.add(new InsnNode(Opcodes.D2F));
@@ -514,12 +514,12 @@ public class CoreModInjector implements IClassTransformer {
 
 											toInject.add(
 													new FieldInsnNode(
-															Opcodes.GETSTATIC, "com/sonicether/soundphysics/SoundPhysics", "soundDistanceAllowance", "D"
+															Opcodes.GETSTATIC, "net/alkalus/envirosound/EnviroSound", "soundDistanceAllowance", "D"
 															)
 													);
 											toInject.add(
 													new FieldInsnNode(
-															Opcodes.GETSTATIC, "com/sonicether/soundphysics/SoundPhysics", "soundDistanceAllowance", "D"
+															Opcodes.GETSTATIC, "net/alkalus/envirosound/EnviroSound", "soundDistanceAllowance", "D"
 															)
 													);
 											toInject.add(new InsnNode(Opcodes.DMUL));

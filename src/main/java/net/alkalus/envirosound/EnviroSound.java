@@ -11,7 +11,7 @@
  * Copyright (c) 2017, 2019 AlkCorp.
  * Contributors: https://github.com/alkcorp/Sound-Physics/graphs/contributors
  *******************************************************************************/
-package com.sonicether.soundphysics;
+package net.alkalus.envirosound;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -47,25 +47,25 @@ import net.minecraft.util.Vec3;
 import paulscode.sound.SoundBuffer;
 import paulscode.sound.SoundSystemConfig;
 
-@Mod(modid = SoundPhysics.modid, acceptedMinecraftVersions = SoundPhysics.mcVersion, version = SoundPhysics.version, guiFactory = "com.sonicether.soundphysics.SPGuiFactory", dependencies = "before:computronics") // Deps
-public class SoundPhysics {
+@Mod(modid = EnviroSound.modid, acceptedMinecraftVersions = EnviroSound.mcVersion, version = EnviroSound.version, guiFactory = "net.alkalus.envirosound.SPGuiFactory", dependencies = "before:computronics") // Deps
+public class EnviroSound {
 
 	public static class ProcThread extends Thread {
 		@Override
 		public synchronized void run() {
-			while (SoundPhysics.thread_alive) {
+			while (EnviroSound.thread_alive) {
 				while (!Config.dynamicEnvironementEvalutaion) {
 					try {
 						Thread.sleep(1000);
 					}
 					catch (final Exception e) {
-						SoundPhysics.logError(String.valueOf(e));
+						EnviroSound.logError(String.valueOf(e));
 					}
 				}
-				synchronized (SoundPhysics.source_list) {
+				synchronized (EnviroSound.source_list) {
 					// log("Updating env " +
 					// String.valueOf(source_list.size()));
-					final ListIterator<Source> iter = SoundPhysics.source_list.listIterator();
+					final ListIterator<Source> iter = EnviroSound.source_list.listIterator();
 					while (iter.hasNext()) {
 						final Source source = iter.next();
 						// log("Updating sound '" + source.name + "' SourceID:"
@@ -90,7 +90,7 @@ public class SoundPhysics {
 							source.posX = pos.get(0);
 							source.posY = pos.get(1);
 							source.posZ = pos.get(2);
-							SoundPhysics.evaluateEnvironment(
+							EnviroSound.evaluateEnvironment(
 									source.sourceID, source.posX, source.posY, source.posZ, source.category, source.name
 									);
 						}
@@ -105,7 +105,7 @@ public class SoundPhysics {
 							);
 				}
 				catch (final Exception e) {
-					SoundPhysics.logError(String.valueOf(e));
+					EnviroSound.logError(String.valueOf(e));
 				}
 			}
 		}
@@ -145,10 +145,6 @@ public class SoundPhysics {
 	private static int auxFXSlot1;
 	private static int auxFXSlot2;
 	private static int auxFXSlot3;
-	private static final Pattern blockPattern = Pattern.compile(".*block.*");
-	private static final Pattern clickPattern = Pattern.compile(
-			".*random.click.*"
-			);
 
 	private static int directFilter0;
 
@@ -158,24 +154,22 @@ public class SoundPhysics {
 	public static float globalVolumeMultiplier = 4.0f;
 	private static SoundCategory lastSoundCategory;
 	private static String lastSoundName;
-	private static final String logPrefix = "[SOUND PHYSICS]";
+	private static final String logPrefix = "[EnviroSound]";
 	private static Minecraft mc;
 	public static final String mcVersion = "1.7.10";
-	public static final String modid = "soundphysics";
-	private static final Pattern noteBlockPattern = Pattern.compile(
-			".*note/.*"
-			);
+	public static final String modid = "EnviroSound";
 	private static ProcThread proc_thread;
+	
+	private static final Pattern blockPattern = Pattern.compile(".*block.*");
+	private static final Pattern clickPattern = Pattern.compile(".*random.click.*");
+	private static final Pattern noteBlockPattern = Pattern.compile(".*note/.*");
 	private static final Pattern rainPattern = Pattern.compile(".*rain.*");
 	private static int reverb0;
 	private static int reverb1;
 	private static int reverb2;
-
 	private static int reverb3;
-
 	private static int sendFilter0;
 	private static int sendFilter1;
-
 	private static int sendFilter2;
 	private static int sendFilter3;
 	public static double soundDistanceAllowance = Config.soundDistanceAllowance;
@@ -187,24 +181,24 @@ public class SoundPhysics {
 	public static final String version = "1.0.6";
 
 	public static void applyConfigChanges() {
-		SoundPhysics.globalRolloffFactor = Config.rolloffFactor;
-		SoundPhysics.globalReverbMultiplier = 0.7f * Config.globalReverbGain;
-		SoundPhysics.soundDistanceAllowance = Config.soundDistanceAllowance;
+		EnviroSound.globalRolloffFactor = Config.rolloffFactor;
+		EnviroSound.globalReverbMultiplier = 0.7f * Config.globalReverbGain;
+		EnviroSound.soundDistanceAllowance = Config.soundDistanceAllowance;
 
-		if (SoundPhysics.auxFXSlot0 != 0) {
+		if (EnviroSound.auxFXSlot0 != 0) {
 			// Set the global reverb parameters and apply them to the effect and
 			// effectslot
-			SoundPhysics.setReverbParams(
-					ReverbParams.getReverb0(), SoundPhysics.auxFXSlot0, SoundPhysics.reverb0
+			EnviroSound.setReverbParams(
+					ReverbParams.getReverb0(), EnviroSound.auxFXSlot0, EnviroSound.reverb0
 					);
-			SoundPhysics.setReverbParams(
-					ReverbParams.getReverb1(), SoundPhysics.auxFXSlot1, SoundPhysics.reverb1
+			EnviroSound.setReverbParams(
+					ReverbParams.getReverb1(), EnviroSound.auxFXSlot1, EnviroSound.reverb1
 					);
-			SoundPhysics.setReverbParams(
-					ReverbParams.getReverb2(), SoundPhysics.auxFXSlot2, SoundPhysics.reverb2
+			EnviroSound.setReverbParams(
+					ReverbParams.getReverb2(), EnviroSound.auxFXSlot2, EnviroSound.reverb2
 					);
-			SoundPhysics.setReverbParams(
-					ReverbParams.getReverb3(), SoundPhysics.auxFXSlot3, SoundPhysics.reverb3
+			EnviroSound.setReverbParams(
+					ReverbParams.getReverb3(), EnviroSound.auxFXSlot3, EnviroSound.reverb3
 					);
 		}
 	}
@@ -216,7 +210,7 @@ public class SoundPhysics {
 			final Entity entity, final String name
 			) {
 		if (name != null) {
-			if (SoundPhysics.stepPattern.matcher(name).matches()) {
+			if (EnviroSound.stepPattern.matcher(name).matches()) {
 				return 0;
 			}
 		}
@@ -252,29 +246,29 @@ public class SoundPhysics {
 				break;
 		}
 
-		SoundPhysics.logError(errorMessage + " OpenAL error " + errorName);
+		EnviroSound.logError(errorMessage + " OpenAL error " + errorName);
 		return true;
 	}
 
 	private static void evaluateEnvironment(
 			final int sourceID, final float posX, final float posY, final float posZ, final SoundCategory category, final String name
 			) {
-		if ((SoundPhysics.mc.thePlayer == null)
-				| (SoundPhysics.mc.theWorld == null) | (posY <= 0)
+		if ((EnviroSound.mc.thePlayer == null)
+				| (EnviroSound.mc.theWorld == null) | (posY <= 0)
 				| (category == SoundCategory.RECORDS)
 				| (category == SoundCategory.MUSIC)) {
 			// posY <= 0 as a condition has to be there: Ingame
 			// menu clicks do have a player and world present
-			SoundPhysics.setEnvironment(
+			EnviroSound.setEnvironment(
 					sourceID, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
 					);
 			return;
 		}
 
-		final boolean isRain = SoundPhysics.rainPattern.matcher(name).matches();
+		final boolean isRain = EnviroSound.rainPattern.matcher(name).matches();
 
 		if (Config.skipRainOcclusionTracing && isRain) {
-			SoundPhysics.setEnvironment(
+			EnviroSound.setEnvironment(
 					sourceID, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
 					);
 			return;
@@ -284,28 +278,28 @@ public class SoundPhysics {
 		final float absorptionCoeff = Config.globalBlockAbsorption * 3.0f;
 
 		final Vec3 playerPos = Vec3.createVectorHelper(
-				SoundPhysics.mc.thePlayer.posX, SoundPhysics.mc.thePlayer.posY
-				+ SoundPhysics.mc.thePlayer.getEyeHeight(), SoundPhysics.mc.thePlayer.posZ
+				EnviroSound.mc.thePlayer.posX, EnviroSound.mc.thePlayer.posY
+				+ EnviroSound.mc.thePlayer.getEyeHeight(), EnviroSound.mc.thePlayer.posZ
 				);
-		final Vec3 soundPos = SoundPhysics.offsetSoundByName(
+		final Vec3 soundPos = EnviroSound.offsetSoundByName(
 				posX, posY, posZ, playerPos, name, category
 				);
 		final Vec3 normalToPlayer = playerPos.subtract(soundPos).normalize();
 
 		float snowFactor = 0.0f;
 
-		if (SoundPhysics.mc.theWorld.isRaining()) {
+		if (EnviroSound.mc.theWorld.isRaining()) {
 			final Vec3 middlePos = playerPos.addVector(
 					soundPos.xCoord, soundPos.yCoord, soundPos.zCoord
 					);
 			middlePos.xCoord = middlePos.xCoord * 0.5d;
 			middlePos.yCoord = middlePos.yCoord * 0.5d;
 			middlePos.zCoord = middlePos.zCoord * 0.5d;
-			final int snowingPlayer = SoundPhysics.isSnowingAt(
+			final int snowingPlayer = EnviroSound.isSnowingAt(
 					playerPos, false
 					);
-			final int snowingSound = SoundPhysics.isSnowingAt(soundPos, false);
-			final int snowingMiddle = SoundPhysics.isSnowingAt(
+			final int snowingSound = EnviroSound.isSnowingAt(soundPos, false);
+			final int snowingMiddle = EnviroSound.isSnowingAt(
 					middlePos, false
 					);
 			snowFactor = (snowingPlayer * 0.25f) + (snowingMiddle * 0.5f)
@@ -317,7 +311,7 @@ public class SoundPhysics {
 		if (snowFactor > 0.0f) {
 			airAbsorptionFactor = Math.max(
 					Config.snowAirAbsorptionFactor
-					* SoundPhysics.mc.theWorld.getRainStrength(1.0f) * snowFactor, airAbsorptionFactor
+					* EnviroSound.mc.theWorld.getRainStrength(1.0f) * snowFactor, airAbsorptionFactor
 					);
 		}
 
@@ -342,7 +336,7 @@ public class SoundPhysics {
 		float occlusionAccumulation = 0.0f;
 
 		for (int i = 0; i < 10; i++) {
-			final MovingObjectPosition rayHit = SoundPhysics.mc.theWorld.rayTraceBlocks(
+			final MovingObjectPosition rayHit = EnviroSound.mc.theWorld.rayTraceBlocks(
 					rayOrigin, playerPos, true
 					);
 
@@ -350,7 +344,7 @@ public class SoundPhysics {
 				break;
 			}
 
-			final Block blockHit = SoundPhysics.mc.theWorld.getBlock(
+			final Block blockHit = EnviroSound.mc.theWorld.getBlock(
 					rayHit.blockX, rayHit.blockY, rayHit.blockZ
 					);
 
@@ -389,12 +383,12 @@ public class SoundPhysics {
 		float sendCutoff2 = 1.0f;
 		float sendCutoff3 = 1.0f;
 
-		if (SoundPhysics.mc.thePlayer.isInsideOfMaterial(Material.water)) {
+		if (EnviroSound.mc.thePlayer.isInsideOfMaterial(Material.water)) {
 			directCutoff *= 1.0f - Config.underwaterFilter;
 		}
 
 		if (isRain) {
-			SoundPhysics.setEnvironment(
+			EnviroSound.setEnvironment(
 					sourceID, sendGain0, sendGain1, sendGain2, sendGain3, sendCutoff0, sendCutoff1, sendCutoff2, sendCutoff3, directCutoff, directGain, airAbsorptionFactor
 					);
 			return;
@@ -438,7 +432,7 @@ public class SoundPhysics {
 							* maxDistance)
 					);
 
-			final MovingObjectPosition rayHit = SoundPhysics.mc.theWorld.rayTraceBlocks(
+			final MovingObjectPosition rayHit = EnviroSound.mc.theWorld.rayTraceBlocks(
 					rayStart, rayEnd, true
 					);
 
@@ -446,11 +440,11 @@ public class SoundPhysics {
 				final double rayLength = soundPos.distanceTo(rayHit.hitVec);
 
 				// Additional bounces
-				Block lastHitBlock = SoundPhysics.mc.theWorld.getBlock(
+				Block lastHitBlock = EnviroSound.mc.theWorld.getBlock(
 						rayHit.blockX, rayHit.blockY, rayHit.blockZ
 						);
 				Vec3 lastHitPos = rayHit.hitVec;
-				Vec3 lastHitNormal = SoundPhysics.getNormalFromFacing(
+				Vec3 lastHitNormal = EnviroSound.getNormalFromFacing(
 						rayHit.sideHit
 						);
 				Vec3 lastRayDir = rayDir;
@@ -459,7 +453,7 @@ public class SoundPhysics {
 
 				// Secondary ray bounces
 				for (int j = 0; j < rayBounces; j++) {
-					final Vec3 newRayDir = SoundPhysics.reflect(
+					final Vec3 newRayDir = EnviroSound.reflect(
 							lastRayDir, lastHitNormal
 							);
 					// Vec3 newRayDir = lastHitNormal;
@@ -480,12 +474,12 @@ public class SoundPhysics {
 									* maxDistance)
 							);
 
-					final MovingObjectPosition newRayHit = SoundPhysics.mc.theWorld.rayTraceBlocks(
+					final MovingObjectPosition newRayHit = EnviroSound.mc.theWorld.rayTraceBlocks(
 							newRayStart, newRayEnd, true
 							);
 
 					float energyTowardsPlayer = 0.25f;
-					final float blockReflectivity = SoundPhysics.getBlockReflectivity(
+					final float blockReflectivity = EnviroSound.getBlockReflectivity(
 							lastHitBlock
 							);
 					energyTowardsPlayer *= (blockReflectivity * 0.75f) + 0.25f;
@@ -503,11 +497,11 @@ public class SoundPhysics {
 						totalRayDistance += newRayLength;
 
 						lastHitPos = newRayHit.hitVec;
-						lastHitNormal = SoundPhysics.getNormalFromFacing(
+						lastHitNormal = EnviroSound.getNormalFromFacing(
 								newRayHit.sideHit
 								);
 						lastRayDir = newRayDir;
-						lastHitBlock = SoundPhysics.mc.theWorld.getBlock(
+						lastHitBlock = EnviroSound.mc.theWorld.getBlock(
 								newRayHit.blockX, newRayHit.blockY, newRayHit.blockZ
 								);
 
@@ -526,7 +520,7 @@ public class SoundPhysics {
 											* 0.01)
 									);
 
-							final MovingObjectPosition finalRayHit = SoundPhysics.mc.theWorld.rayTraceBlocks(
+							final MovingObjectPosition finalRayHit = EnviroSound.mc.theWorld.rayTraceBlocks(
 									finalRayStart, playerPos, true
 									);
 
@@ -643,14 +637,14 @@ public class SoundPhysics {
 		sendGain2 *= (float) Math.pow(sendCutoff2, 0.1);
 		sendGain3 *= (float) Math.pow(sendCutoff3, 0.1);
 
-		if (SoundPhysics.mc.thePlayer.isInWater()) {
+		if (EnviroSound.mc.thePlayer.isInWater()) {
 			sendCutoff0 *= 0.4f;
 			sendCutoff1 *= 0.4f;
 			sendCutoff2 *= 0.4f;
 			sendCutoff3 *= 0.4f;
 		}
 
-		SoundPhysics.setEnvironment(
+		EnviroSound.setEnvironment(
 				sourceID, sendGain0, sendGain1, sendGain2, sendGain3, sendCutoff0, sendCutoff1, sendCutoff2, sendCutoff3, directCutoff, directGain, airAbsorptionFactor
 				);
 	}
@@ -662,8 +656,8 @@ public class SoundPhysics {
 		{
 			if(mc.gameSettings.showDebugInfo && Config.dynamicEnvironementEvalutaion && Config.debugInfoShow) {
 				event.getLeft().add("");
-				event.getLeft().add("[SoundPhysics] "+String.valueOf(source_list.size())+" Sources");
-				event.getLeft().add("[SoundPhysics] Source list :");
+				event.getLeft().add("[EnviroSound] "+String.valueOf(source_list.size())+" Sources");
+				event.getLeft().add("[EnviroSound] Source list :");
 				synchronized (source_list) {
 					ListIterator<Source> iter = source_list.listIterator();
 					while (iter.hasNext())  {
@@ -752,24 +746,24 @@ public class SoundPhysics {
 	 * CALLED BY ASM INJECTED CODE!
 	 */
 	public static void init() {
-		SoundPhysics.setupEFX();
-		SoundPhysics.mc = Minecraft.getMinecraft();
-		SoundPhysics.setupThread();
+		EnviroSound.setupEFX();
+		EnviroSound.mc = Minecraft.getMinecraft();
+		EnviroSound.setupThread();
 	}
 
 	// Copy of isRainingAt (1.12.2)
 	private static int isSnowingAt(
 			final Vec3 position, final boolean check_rain
 			) {
-		if (check_rain && !SoundPhysics.mc.theWorld.isRaining()) {
+		if (check_rain && !EnviroSound.mc.theWorld.isRaining()) {
 			return 0;
 		}
-		else if (!SoundPhysics.mc.theWorld.canBlockSeeTheSky(
+		else if (!EnviroSound.mc.theWorld.canBlockSeeTheSky(
 				(int) position.xCoord, (int) position.yCoord, (int) position.zCoord
 				)) {
 			return 0;
 		}
-		else if (SoundPhysics.mc.theWorld.getPrecipitationHeight(
+		else if (EnviroSound.mc.theWorld.getPrecipitationHeight(
 				(int) position.xCoord, (int) position.zCoord
 				) > position.yCoord) {
 			return 0;
@@ -780,9 +774,9 @@ public class SoundPhysics {
 			else if (cansnow) return true;
 			else return false;*/
 			// canSnowAt() but the name isn't there
-			return (SoundPhysics.mc.theWorld.func_147478_e(
+			return (EnviroSound.mc.theWorld.func_147478_e(
 					(int) position.xCoord, (int) position.yCoord, (int) position.zCoord, false
-					) | SoundPhysics.mc.theWorld.getBiomeGenForCoords(
+					) | EnviroSound.mc.theWorld.getBiomeGenForCoords(
 							(int) position.xCoord, (int) position.zCoord
 							).getEnableSnow()) ? 1 : 0;
 		}
@@ -790,13 +784,13 @@ public class SoundPhysics {
 
 	public static void log(final String message) {
 		System.out.println(
-				SoundPhysics.logPrefix.concat(" : ").concat(message)
+				EnviroSound.logPrefix.concat(" : ").concat(message)
 				);
 	}
 
 	public static void logError(final String errorMessage) {
 		System.out.println(
-				SoundPhysics.logPrefix.concat(" [ERROR] : ").concat(errorMessage)
+				EnviroSound.logPrefix.concat(" [ERROR] : ").concat(errorMessage)
 				);
 	}
 
@@ -813,12 +807,12 @@ public class SoundPhysics {
 		double tempNormZ = 0;
 
 		if (((soundY % 1.0) < 0.001)
-				|| SoundPhysics.stepPattern.matcher(name).matches()) {
+				|| EnviroSound.stepPattern.matcher(name).matches()) {
 			offsetY = 0.13;
 		}
 
 		if ((category == SoundCategory.BLOCKS)
-				|| SoundPhysics.blockPattern.matcher(name).matches() || !SoundPhysics.mc.theWorld.isAirBlock((int) Math.floor(soundX), (int) Math.floor(soundY), (int) Math.floor(soundZ))) {
+				|| EnviroSound.blockPattern.matcher(name).matches() || !EnviroSound.mc.theWorld.isAirBlock((int) Math.floor(soundX), (int) Math.floor(soundY), (int) Math.floor(soundZ))) {
 			// The ray will probably hit the block that it's emitting from
 			// before
 			// escaping. Offset the ray start position towards the player by the
@@ -856,13 +850,13 @@ public class SoundPhysics {
 				|| !Config.autoSteroDownmix) {
 			return buff;
 		}
-		if ((SoundPhysics.mc.thePlayer == null)
-				| (SoundPhysics.mc.theWorld == null)
-				| (SoundPhysics.lastSoundCategory == SoundCategory.RECORDS)
-				| (SoundPhysics.lastSoundCategory == SoundCategory.MUSIC)
-				| SoundPhysics.uiPattern.matcher(filename).matches() | SoundPhysics.clickPattern.matcher(filename).matches()) {
+		if ((EnviroSound.mc.thePlayer == null)
+				| (EnviroSound.mc.theWorld == null)
+				| (EnviroSound.lastSoundCategory == SoundCategory.RECORDS)
+				| (EnviroSound.lastSoundCategory == SoundCategory.MUSIC)
+				| EnviroSound.uiPattern.matcher(filename).matches() | EnviroSound.clickPattern.matcher(filename).matches()) {
 			if (Config.autoSteroDownmixLogging) {
-				SoundPhysics.log(
+				EnviroSound.log(
 						"Not converting sound '" + filename + "'("
 								+ buff.audioFormat.toString() + ")"
 						);
@@ -876,7 +870,7 @@ public class SoundPhysics {
 				orignalformat.getEncoding(), orignalformat.getSampleRate(), bits, 1, orignalformat.getFrameSize(), orignalformat.getFrameRate(), bigendian
 				);
 		if (Config.autoSteroDownmixLogging) {
-			SoundPhysics.log(
+			EnviroSound.log(
 					"Converting sound '" + filename + "'("
 							+ orignalformat.toString() + ") to mono ("
 							+ monoformat.toString() + ")"
@@ -911,8 +905,8 @@ public class SoundPhysics {
 	public static void onPlaySound(
 			final float posX, final float posY, final float posZ, final int sourceID
 			) {
-		SoundPhysics.onPlaySound(
-				posX, posY, posZ, sourceID, SoundPhysics.lastSoundCategory, SoundPhysics.lastSoundName
+		EnviroSound.onPlaySound(
+				posX, posY, posZ, sourceID, EnviroSound.lastSoundCategory, EnviroSound.lastSoundName
 				);
 	}
 
@@ -926,30 +920,30 @@ public class SoundPhysics {
 		// "+String.valueOf(posZ)+" - "+String.valueOf(sourceID)+" -
 		// "+soundCat.toString()+" - "+soundName);
 		if (Config.noteBlockEnable && (soundCat == SoundCategory.RECORDS)
-				&& SoundPhysics.noteBlockPattern.matcher(soundName).matches()) {
+				&& EnviroSound.noteBlockPattern.matcher(soundName).matches()) {
 			soundCat = SoundCategory.BLOCKS;
 		}
-		SoundPhysics.evaluateEnvironment(
+		EnviroSound.evaluateEnvironment(
 				sourceID, posX, posY, posZ, soundCat, soundName
 				);
 		if (!Config.dynamicEnvironementEvalutaion) {
 			return;
 		}
-		if (((SoundPhysics.mc.thePlayer == null)
-				| (SoundPhysics.mc.theWorld == null) | (posY <= 0)
+		if (((EnviroSound.mc.thePlayer == null)
+				| (EnviroSound.mc.theWorld == null) | (posY <= 0)
 				| (soundCat == SoundCategory.RECORDS)
 				| (soundCat == SoundCategory.MUSIC))
 				|| (Config.skipRainOcclusionTracing
-						&& SoundPhysics.rainPattern.matcher(soundName).matches())) {
+						&& EnviroSound.rainPattern.matcher(soundName).matches())) {
 			return;
 		}
 		final Source tmp = new Source(
 				sourceID, posX, posY, posZ, soundCat, soundName
 				);
-		if (SoundPhysics.source_check(tmp)) {
+		if (EnviroSound.source_check(tmp)) {
 			return;
 		}
-		SoundPhysics.source_list.add(tmp);
+		EnviroSound.source_list.add(tmp);
 	}
 
 	/**
@@ -960,7 +954,7 @@ public class SoundPhysics {
 	public static void onPlaySoundAL(
 			final float posX, final float posY, final float posZ, final int sourceID
 			) {
-		SoundPhysics.onPlaySound(
+		EnviroSound.onPlaySound(
 				posX, posY, posZ, sourceID, SoundCategory.BLOCKS, "null"
 				);
 	}
@@ -993,53 +987,53 @@ public class SoundPhysics {
 		// Set reverb send filter values and set source to send to all reverb fx
 		// slots
 		EFX10.alFilterf(
-				SoundPhysics.sendFilter0, EFX10.AL_LOWPASS_GAIN, sendGain0
+				EnviroSound.sendFilter0, EFX10.AL_LOWPASS_GAIN, sendGain0
 				);
 		EFX10.alFilterf(
-				SoundPhysics.sendFilter0, EFX10.AL_LOWPASS_GAINHF, sendCutoff0
+				EnviroSound.sendFilter0, EFX10.AL_LOWPASS_GAINHF, sendCutoff0
 				);
 		AL11.alSource3i(
-				sourceID, EFX10.AL_AUXILIARY_SEND_FILTER, SoundPhysics.auxFXSlot0, 0, SoundPhysics.sendFilter0
+				sourceID, EFX10.AL_AUXILIARY_SEND_FILTER, EnviroSound.auxFXSlot0, 0, EnviroSound.sendFilter0
 				);
 
 		EFX10.alFilterf(
-				SoundPhysics.sendFilter1, EFX10.AL_LOWPASS_GAIN, sendGain1
+				EnviroSound.sendFilter1, EFX10.AL_LOWPASS_GAIN, sendGain1
 				);
 		EFX10.alFilterf(
-				SoundPhysics.sendFilter1, EFX10.AL_LOWPASS_GAINHF, sendCutoff1
+				EnviroSound.sendFilter1, EFX10.AL_LOWPASS_GAINHF, sendCutoff1
 				);
 		AL11.alSource3i(
-				sourceID, EFX10.AL_AUXILIARY_SEND_FILTER, SoundPhysics.auxFXSlot1, 1, SoundPhysics.sendFilter1
+				sourceID, EFX10.AL_AUXILIARY_SEND_FILTER, EnviroSound.auxFXSlot1, 1, EnviroSound.sendFilter1
 				);
 
 		EFX10.alFilterf(
-				SoundPhysics.sendFilter2, EFX10.AL_LOWPASS_GAIN, sendGain2
+				EnviroSound.sendFilter2, EFX10.AL_LOWPASS_GAIN, sendGain2
 				);
 		EFX10.alFilterf(
-				SoundPhysics.sendFilter2, EFX10.AL_LOWPASS_GAINHF, sendCutoff2
+				EnviroSound.sendFilter2, EFX10.AL_LOWPASS_GAINHF, sendCutoff2
 				);
 		AL11.alSource3i(
-				sourceID, EFX10.AL_AUXILIARY_SEND_FILTER, SoundPhysics.auxFXSlot2, 2, SoundPhysics.sendFilter2
+				sourceID, EFX10.AL_AUXILIARY_SEND_FILTER, EnviroSound.auxFXSlot2, 2, EnviroSound.sendFilter2
 				);
 
 		EFX10.alFilterf(
-				SoundPhysics.sendFilter3, EFX10.AL_LOWPASS_GAIN, sendGain3
+				EnviroSound.sendFilter3, EFX10.AL_LOWPASS_GAIN, sendGain3
 				);
 		EFX10.alFilterf(
-				SoundPhysics.sendFilter3, EFX10.AL_LOWPASS_GAINHF, sendCutoff3
+				EnviroSound.sendFilter3, EFX10.AL_LOWPASS_GAINHF, sendCutoff3
 				);
 		AL11.alSource3i(
-				sourceID, EFX10.AL_AUXILIARY_SEND_FILTER, SoundPhysics.auxFXSlot3, 3, SoundPhysics.sendFilter3
+				sourceID, EFX10.AL_AUXILIARY_SEND_FILTER, EnviroSound.auxFXSlot3, 3, EnviroSound.sendFilter3
 				);
 
 		EFX10.alFilterf(
-				SoundPhysics.directFilter0, EFX10.AL_LOWPASS_GAIN, directGain
+				EnviroSound.directFilter0, EFX10.AL_LOWPASS_GAIN, directGain
 				);
 		EFX10.alFilterf(
-				SoundPhysics.directFilter0, EFX10.AL_LOWPASS_GAINHF, directCutoff
+				EnviroSound.directFilter0, EFX10.AL_LOWPASS_GAINHF, directCutoff
 				);
 		AL10.alSourcei(
-				sourceID, EFX10.AL_DIRECT_FILTER, SoundPhysics.directFilter0
+				sourceID, EFX10.AL_DIRECT_FILTER, EnviroSound.directFilter0
 				);
 
 		AL10.alSourcef(
@@ -1053,14 +1047,14 @@ public class SoundPhysics {
 	 * CALLED BY ASM INJECTED CODE!
 	 */
 	public static void setLastSoundCategory(final SoundCategory sc) {
-		SoundPhysics.lastSoundCategory = sc;
+		EnviroSound.lastSoundCategory = sc;
 	}
 
 	/**
 	 * CALLED BY ASM INJECTED CODE!
 	 */
 	public static void setLastSoundName(final String soundName) {
-		SoundPhysics.lastSoundName = soundName;
+		EnviroSound.lastSoundName = soundName;
 	}
 
 	/**
@@ -1071,41 +1065,41 @@ public class SoundPhysics {
 			final ReverbParams r, final int auxFXSlot, final int reverbSlot
 			) {
 		EFX10.alEffectf(reverbSlot, EFX10.AL_EAXREVERB_DENSITY, r.density);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb density: " + r.density
 				);
 
 		EFX10.alEffectf(reverbSlot, EFX10.AL_EAXREVERB_DIFFUSION, r.diffusion);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb diffusion: " + r.diffusion
 				);
 
 		EFX10.alEffectf(reverbSlot, EFX10.AL_EAXREVERB_GAIN, r.gain);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb gain: " + r.gain
 				);
 
 		EFX10.alEffectf(reverbSlot, EFX10.AL_EAXREVERB_GAINHF, r.gainHF);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb gainHF: " + r.gainHF
 				);
 
 		EFX10.alEffectf(reverbSlot, EFX10.AL_EAXREVERB_DECAY_TIME, r.decayTime);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb decayTime: " + r.decayTime
 				);
 
 		EFX10.alEffectf(
 				reverbSlot, EFX10.AL_EAXREVERB_DECAY_HFRATIO, r.decayHFRatio
 				);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb decayHFRatio: " + r.decayHFRatio
 				);
 
 		EFX10.alEffectf(
 				reverbSlot, EFX10.AL_EAXREVERB_REFLECTIONS_GAIN, r.reflectionsGain
 				);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb reflectionsGain: "
 						+ r.reflectionsGain
 				);
@@ -1113,7 +1107,7 @@ public class SoundPhysics {
 		EFX10.alEffectf(
 				reverbSlot, EFX10.AL_EAXREVERB_LATE_REVERB_GAIN, r.lateReverbGain
 				);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb lateReverbGain: "
 						+ r.lateReverbGain
 				);
@@ -1121,7 +1115,7 @@ public class SoundPhysics {
 		EFX10.alEffectf(
 				reverbSlot, EFX10.AL_EAXREVERB_LATE_REVERB_DELAY, r.lateReverbDelay
 				);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb lateReverbDelay: "
 						+ r.lateReverbDelay
 				);
@@ -1129,7 +1123,7 @@ public class SoundPhysics {
 		EFX10.alEffectf(
 				reverbSlot, EFX10.AL_EAXREVERB_AIR_ABSORPTION_GAINHF, r.airAbsorptionGainHF
 				);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb airAbsorptionGainHF: "
 						+ r.airAbsorptionGainHF
 				);
@@ -1137,7 +1131,7 @@ public class SoundPhysics {
 		EFX10.alEffectf(
 				reverbSlot, EFX10.AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, r.roomRolloffFactor
 				);
-		SoundPhysics.checkErrorLog(
+		EnviroSound.checkErrorLog(
 				"Error while assigning reverb roomRolloffFactor: "
 						+ r.roomRolloffFactor
 				);
@@ -1156,100 +1150,100 @@ public class SoundPhysics {
 				);
 
 		if (ALC10.alcIsExtensionPresent(currentDevice, "ALC_EXT_EFX")) {
-			SoundPhysics.log("EFX Extension recognized.");
+			EnviroSound.log("EFX Extension recognized.");
 		}
 		else {
-			SoundPhysics.logError(
+			EnviroSound.logError(
 					"EFX Extension not found on current device. Aborting."
 					);
 			return;
 		}
 
 		// Create auxiliary effect slots
-		SoundPhysics.auxFXSlot0 = EFX10.alGenAuxiliaryEffectSlots();
-		SoundPhysics.log("Aux slot " + SoundPhysics.auxFXSlot0 + " created");
+		EnviroSound.auxFXSlot0 = EFX10.alGenAuxiliaryEffectSlots();
+		EnviroSound.log("Aux slot " + EnviroSound.auxFXSlot0 + " created");
 		EFX10.alAuxiliaryEffectSloti(
-				SoundPhysics.auxFXSlot0, EFX10.AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL10.AL_TRUE
+				EnviroSound.auxFXSlot0, EFX10.AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL10.AL_TRUE
 				);
 
-		SoundPhysics.auxFXSlot1 = EFX10.alGenAuxiliaryEffectSlots();
-		SoundPhysics.log("Aux slot " + SoundPhysics.auxFXSlot1 + " created");
+		EnviroSound.auxFXSlot1 = EFX10.alGenAuxiliaryEffectSlots();
+		EnviroSound.log("Aux slot " + EnviroSound.auxFXSlot1 + " created");
 		EFX10.alAuxiliaryEffectSloti(
-				SoundPhysics.auxFXSlot1, EFX10.AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL10.AL_TRUE
+				EnviroSound.auxFXSlot1, EFX10.AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL10.AL_TRUE
 				);
 
-		SoundPhysics.auxFXSlot2 = EFX10.alGenAuxiliaryEffectSlots();
-		SoundPhysics.log("Aux slot " + SoundPhysics.auxFXSlot2 + " created");
+		EnviroSound.auxFXSlot2 = EFX10.alGenAuxiliaryEffectSlots();
+		EnviroSound.log("Aux slot " + EnviroSound.auxFXSlot2 + " created");
 		EFX10.alAuxiliaryEffectSloti(
-				SoundPhysics.auxFXSlot2, EFX10.AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL10.AL_TRUE
+				EnviroSound.auxFXSlot2, EFX10.AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL10.AL_TRUE
 				);
 
-		SoundPhysics.auxFXSlot3 = EFX10.alGenAuxiliaryEffectSlots();
-		SoundPhysics.log("Aux slot " + SoundPhysics.auxFXSlot3 + " created");
+		EnviroSound.auxFXSlot3 = EFX10.alGenAuxiliaryEffectSlots();
+		EnviroSound.log("Aux slot " + EnviroSound.auxFXSlot3 + " created");
 		EFX10.alAuxiliaryEffectSloti(
-				SoundPhysics.auxFXSlot3, EFX10.AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL10.AL_TRUE
+				EnviroSound.auxFXSlot3, EFX10.AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL10.AL_TRUE
 				);
-		SoundPhysics.checkErrorLog("Failed creating auxiliary effect slots!");
+		EnviroSound.checkErrorLog("Failed creating auxiliary effect slots!");
 
-		SoundPhysics.reverb0 = EFX10.alGenEffects();
+		EnviroSound.reverb0 = EFX10.alGenEffects();
 		EFX10.alEffecti(
-				SoundPhysics.reverb0, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_EAXREVERB
+				EnviroSound.reverb0, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_EAXREVERB
 				);
-		SoundPhysics.checkErrorLog("Failed creating reverb effect slot 0!");
-		SoundPhysics.reverb1 = EFX10.alGenEffects();
+		EnviroSound.checkErrorLog("Failed creating reverb effect slot 0!");
+		EnviroSound.reverb1 = EFX10.alGenEffects();
 		EFX10.alEffecti(
-				SoundPhysics.reverb1, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_EAXREVERB
+				EnviroSound.reverb1, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_EAXREVERB
 				);
-		SoundPhysics.checkErrorLog("Failed creating reverb effect slot 1!");
-		SoundPhysics.reverb2 = EFX10.alGenEffects();
+		EnviroSound.checkErrorLog("Failed creating reverb effect slot 1!");
+		EnviroSound.reverb2 = EFX10.alGenEffects();
 		EFX10.alEffecti(
-				SoundPhysics.reverb2, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_EAXREVERB
+				EnviroSound.reverb2, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_EAXREVERB
 				);
-		SoundPhysics.checkErrorLog("Failed creating reverb effect slot 2!");
-		SoundPhysics.reverb3 = EFX10.alGenEffects();
+		EnviroSound.checkErrorLog("Failed creating reverb effect slot 2!");
+		EnviroSound.reverb3 = EFX10.alGenEffects();
 		EFX10.alEffecti(
-				SoundPhysics.reverb3, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_EAXREVERB
+				EnviroSound.reverb3, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_EAXREVERB
 				);
-		SoundPhysics.checkErrorLog("Failed creating reverb effect slot 3!");
+		EnviroSound.checkErrorLog("Failed creating reverb effect slot 3!");
 
 		// Create filters
-		SoundPhysics.directFilter0 = EFX10.alGenFilters();
+		EnviroSound.directFilter0 = EFX10.alGenFilters();
 		EFX10.alFilteri(
-				SoundPhysics.directFilter0, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
+				EnviroSound.directFilter0, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
 				);
 
-		SoundPhysics.sendFilter0 = EFX10.alGenFilters();
+		EnviroSound.sendFilter0 = EFX10.alGenFilters();
 		EFX10.alFilteri(
-				SoundPhysics.sendFilter0, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
+				EnviroSound.sendFilter0, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
 				);
 
-		SoundPhysics.sendFilter1 = EFX10.alGenFilters();
+		EnviroSound.sendFilter1 = EFX10.alGenFilters();
 		EFX10.alFilteri(
-				SoundPhysics.sendFilter1, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
+				EnviroSound.sendFilter1, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
 				);
 
-		SoundPhysics.sendFilter2 = EFX10.alGenFilters();
+		EnviroSound.sendFilter2 = EFX10.alGenFilters();
 		EFX10.alFilteri(
-				SoundPhysics.sendFilter2, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
+				EnviroSound.sendFilter2, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
 				);
 
-		SoundPhysics.sendFilter3 = EFX10.alGenFilters();
+		EnviroSound.sendFilter3 = EFX10.alGenFilters();
 		EFX10.alFilteri(
-				SoundPhysics.sendFilter3, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
+				EnviroSound.sendFilter3, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS
 				);
-		SoundPhysics.checkErrorLog("Error creating lowpass filters!");
+		EnviroSound.checkErrorLog("Error creating lowpass filters!");
 
-		SoundPhysics.applyConfigChanges();
+		EnviroSound.applyConfigChanges();
 	}
 
 	private static synchronized void setupThread() {
-		if (SoundPhysics.source_list == null) {
-			SoundPhysics.source_list = Collections.synchronizedList(
+		if (EnviroSound.source_list == null) {
+			EnviroSound.source_list = Collections.synchronizedList(
 					new ArrayList<Source>()
 					);
 		}
 		else {
-			SoundPhysics.source_list.clear();
+			EnviroSound.source_list.clear();
 		}
 
 		/*if (proc_thread != null) {
@@ -1257,16 +1251,16 @@ public class SoundPhysics {
 			thread_alive = false;
 			while (!thread_signal_death);
 		}*/
-		if (SoundPhysics.proc_thread == null) {
-			SoundPhysics.proc_thread = new ProcThread();
-			SoundPhysics.thread_alive = true;
-			SoundPhysics.proc_thread.start();
+		if (EnviroSound.proc_thread == null) {
+			EnviroSound.proc_thread = new ProcThread();
+			EnviroSound.thread_alive = true;
+			EnviroSound.proc_thread.start();
 		}
 	}
 
 	public static boolean source_check(final Source s) {
-		synchronized (SoundPhysics.source_list) {
-			final ListIterator<Source> iter = SoundPhysics.source_list.listIterator();
+		synchronized (EnviroSound.source_list) {
+			final ListIterator<Source> iter = EnviroSound.source_list.listIterator();
 			while (iter.hasNext()) {
 				final Source sn = iter.next();
 				if ((sn.sourceID == s.sourceID) && (sn.bufferID == s.bufferID)

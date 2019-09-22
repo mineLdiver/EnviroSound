@@ -11,7 +11,7 @@
  * Copyright (c) 2017, 2019 AlkCorp.
  * Contributors: https://github.com/alkcorp/Sound-Physics/graphs/contributors
  *******************************************************************************/
-package com.sonicether.soundphysics;
+package net.alkalus.envirosound;
 
 import cpw.mods.fml.client.config.GuiConfig;
 import net.minecraft.client.gui.GuiButton;
@@ -21,7 +21,7 @@ public class SPGuiConfig extends GuiConfig {
 
 	public SPGuiConfig(final GuiScreen parent) {
 		super(
-				parent, Config.instance.getConfigElements(), SoundPhysics.modid, false, false, "Sound Physics Configuration"
+				parent, Config.instance.getConfigElements(), EnviroSound.modid, false, false, "Sound Physics Configuration"
 				);
 	}
 

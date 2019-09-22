@@ -11,7 +11,7 @@
  * Copyright (c) 2017, 2018 AlkCorp.
  * Contributors: https://github.com/alkcorp/Sound-Physics/graphs/contributors
  *******************************************************************************/
-package com.sonicether.soundphysics;
+package net.alkalus.envirosound;
 
 public class ReverbParams {
 
@@ -20,7 +20,7 @@ public class ReverbParams {
 		r.decayTime = 0.15f;
 		r.density = 0.0f;
 		r.diffusion = 1.0f;
-		r.gain = 0.2f * SoundPhysics.globalReverbMultiplier * 0.85f;
+		r.gain = 0.2f * EnviroSound.globalReverbMultiplier * 0.85f;
 		r.gainHF = 0.99f;
 		r.decayHFRatio = 0.6f * Config.globalReverbBrightness;
 		r.reflectionsGain = 2.5f;
@@ -37,7 +37,7 @@ public class ReverbParams {
 		r.decayTime = 0.55f;
 		r.density = 0.0f;
 		r.diffusion = 1.0f;
-		r.gain = 0.3f * SoundPhysics.globalReverbMultiplier * 0.85f;
+		r.gain = 0.3f * EnviroSound.globalReverbMultiplier * 0.85f;
 		r.gainHF = 0.99f;
 		r.decayHFRatio = 0.7f * Config.globalReverbBrightness;
 		r.reflectionsGain = 0.2f;
@@ -54,7 +54,7 @@ public class ReverbParams {
 		r.decayTime = 1.68f;
 		r.density = 0.1f;
 		r.diffusion = 1.0f;
-		r.gain = 0.5f * SoundPhysics.globalReverbMultiplier * 0.85f;
+		r.gain = 0.5f * EnviroSound.globalReverbMultiplier * 0.85f;
 		r.gainHF = 0.99f;
 		r.decayHFRatio = 0.7f * Config.globalReverbBrightness;
 		r.reflectionsGain = 0.0f;
@@ -71,7 +71,7 @@ public class ReverbParams {
 		r.decayTime = 4.142f;
 		r.density = 0.5f;
 		r.diffusion = 1.0f;
-		r.gain = 0.4f * SoundPhysics.globalReverbMultiplier * 0.85f;
+		r.gain = 0.4f * EnviroSound.globalReverbMultiplier * 0.85f;
 		r.gainHF = 0.89f;
 		r.decayHFRatio = 0.7f * Config.globalReverbBrightness;
 		r.reflectionsGain = 0.0f;

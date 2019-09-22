@@ -11,7 +11,7 @@
  * Copyright (c) 2017, 2019 AlkCorp.
  * Contributors: https://github.com/alkcorp/Sound-Physics/graphs/contributors
  *******************************************************************************/
-package com.sonicether.soundphysics;
+package net.alkalus.envirosound;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,7 +130,7 @@ public class Config {
 	public void onConfigChanged(
 			final ConfigChangedEvent.OnConfigChangedEvent eventArgs
 			) {
-		if (eventArgs.modID.equals(SoundPhysics.modid)) {
+		if (eventArgs.modID.equals(EnviroSound.modid)) {
 			syncConfig();
 		}
 	}
@@ -245,7 +245,7 @@ public class Config {
 
 		if (this.forgeConfig.hasChanged()) {
 			this.forgeConfig.save();
-			SoundPhysics.applyConfigChanges();
+			EnviroSound.applyConfigChanges();
 		}
 	}
 
