@@ -11,15 +11,24 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
     }
 }
 
 apply plugin: 'forge'
 
+//Java Version
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+//Compile against UTF-8
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+javadoc.options.encoding = 'UTF-8'
+
 version = "1.7.10"
-group = "com.sonicether.soundphysics"
-archivesBaseName = "Sound-Physics"
+group = "net.alkalus.envirosound"
+archivesBaseName = "EnviroSound"
 
 minecraft {
     version = "1.7.10-10.13.4.1614-1.7.10"
@@ -28,7 +37,7 @@ minecraft {
 
 jar {
 	manifest {
-		attributes 'FMLCorePlugin': 'com.sonicether.soundphysics.CoreModLoader'
+		attributes 'FMLCorePlugin': 'net.alkalus.envirosound.CoreModLoader'
 		attributes 'FMLCorePluginContainsFMLMod': 'true'
 	}
 }
