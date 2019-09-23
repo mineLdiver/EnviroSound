@@ -11,7 +11,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
     }
 }
 
@@ -26,7 +26,7 @@ compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 javadoc.options.encoding = 'UTF-8'
 
-version = "1.7.10"
+version = "1.0.4"
 group = "net.alkalus.envirosound"
 archivesBaseName = "EnviroSound"
 
@@ -36,6 +36,8 @@ minecraft {
 }
 
 jar {
+    archiveName = archivesBaseName + ".1.7.10-" + version + ".jar"
+    classifier = 'main'
 	manifest {
 		attributes 'FMLCorePlugin': 'net.alkalus.envirosound.CoreModLoader'
 		attributes 'FMLCorePluginContainsFMLMod': 'true'
@@ -45,6 +47,35 @@ jar {
 dependencies {
 }
 
+//Gradle Tweak
+//Prevent java 8's strict doclint for javadocs from failing builds
+allprojects {
+	tasks.withType(Javadoc) {
+		options.addStringOption('Xdoclint:none', '-quiet')
+	}
+}
+
+//Attach a version file to our mod
+def generatedVersionDir = "${buildDir}/generated-version"
+
+sourceSets {
+    main {
+        output.dir(generatedVersionDir, builtBy: 'generateVersionProperties')
+    }
+}
+
+task generateVersionProperties {
+    doLast {        
+        def propertiesFile = file "$generatedVersionDir/resources/version.properties"
+        propertiesFile.parentFile.mkdirs()
+        def properties = new Properties()
+        properties.setProperty("version", rootProject.version.toString())
+        propertiesFile.withWriter { properties.store(it, null) }
+		project.logger.lifecycle('Finished creating version file for ' + archivesBaseName)
+    }
+}
+
+processResources.dependsOn generateVersionProperties
 processResources {
 	// this will ensure that this task is redone when the versions change.
 	inputs.property "version", project.version
@@ -62,4 +93,5 @@ processResources {
 	from(sourceSets.main.resources.srcDirs) {
 		exclude 'mcmod.info'
 	}
+	project.logger.lifecycle('Finished updating version within mcmod.info for ' + archivesBaseName)
 }

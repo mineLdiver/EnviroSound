@@ -13,6 +13,7 @@
  *******************************************************************************/
 package net.alkalus.envirosound;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -21,11 +22,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import javax.sound.sampled.AudioFormat;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
@@ -47,25 +48,30 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
-import net.minecraftforge.client.event.sound.SoundEvent;
 import paulscode.sound.SoundBuffer;
 import paulscode.sound.SoundSystemConfig;
 
-@Mod(modid = EnviroSound.modid, acceptedMinecraftVersions = EnviroSound.mcVersion, version = EnviroSound.version,acceptableRemoteVersions = "*", guiFactory = "net.alkalus.envirosound.SPGuiFactory", dependencies = EnviroSound.DEPS) // Deps
+@Mod(modid = EnviroSound.modid, acceptedMinecraftVersions = EnviroSound.mcVersion, version = "1.7.10", acceptableRemoteVersions = "*", guiFactory = "net.alkalus.envirosound.SPGuiFactory", dependencies = EnviroSound.DEPS) // Deps
 public class EnviroSound {
 
 	public static final String DEPS = "before:computronics";
 	public static boolean onServer = false;
+
+
 	
+
+	public static String getVersion() {
+		return VersionLoader.getVersion();
+	}
+
 	public static class ProcThread extends Thread {
 		@Override
 		public synchronized void run() {
 			while (EnviroSound.thread_alive) {
 				while (!Config.dynamicEnvironementEvalutaion) {
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(1250); // Give it a little more time to rest, lighter on the cpu, probably not noticeable. TODO Confirm this.
 					}
 					catch (final Exception e) {
 						EnviroSound.logError(String.valueOf(e));
@@ -157,10 +163,10 @@ public class EnviroSound {
 
 	private static int directFilter0;
 
-	public static float globalReverbMultiplier = 0.7f * Config.globalReverbGain;
+	public static float globalReverbMultiplier = 0.65f * Config.globalReverbGain;
 
 	public static float globalRolloffFactor = Config.rolloffFactor;
-	public static float globalVolumeMultiplier = 4.0f;
+	public static float globalVolumeMultiplier = 4.20f;
 	private static SoundCategory lastSoundCategory;
 	private static String lastSoundName;
 	private static Minecraft mc;
@@ -187,7 +193,7 @@ public class EnviroSound {
 	private static final Pattern stepPattern = Pattern.compile(".*step.*");
 	private static volatile boolean thread_alive;
 	private static final Pattern uiPattern = Pattern.compile(".*\\/ui\\/.*");
-	public static final String version = "1.0.6";
+	public static final String version = VersionLoader.getVersion();
 
 	public static void applyConfigChanges() {
 		EnviroSound.globalRolloffFactor = Config.rolloffFactor;
@@ -211,8 +217,8 @@ public class EnviroSound {
 					);
 		}
 	}
-	
-	
+
+
 	/**
 	 * CALLED BY ASM INJECTED CODE!
 	 */
@@ -1337,7 +1343,7 @@ public class EnviroSound {
 		}		
 		return !deobfuscatedEnvironment;
 	}
-	
+
 	public static final boolean isServerSide() {
 		String aClassName1, aClassName2, aClassName3;
 		if (IsObfuscatedEnvironment()) {
@@ -1350,39 +1356,43 @@ public class EnviroSound {
 			aClassName2 = "net/minecraft/client/resources/Locale";
 			aClassName3 = "net/minecraft/client/audio/SoundManager";
 		}
-		Class aClientTest1, aClientTest2, aClientTest3;		
+		Class<?> aClientTest1, aClientTest2, aClientTest3;	
+		boolean isServer = false;
 		try {
 			aClientTest1 = Class.forName(aClassName1);
 			if (aClientTest1 != null) {
-				return false;
+				isServer = false;
 			}
 		}
 		catch (Throwable t) {
-			
+			aClientTest1 = null;
 		}
 		try {
 			aClientTest2 = Class.forName(aClassName2);
 			if (aClientTest2 != null) {
-				return false;
+				isServer = false;
 			}
 		}
 		catch (Throwable t) {
-			
+			aClientTest2 = null;
 		}
 		try {
 			aClientTest3 = Class.forName(aClassName3);
 			if (aClientTest3 != null) {
-				return false;
+				isServer = false;
 			}
 		}
 		catch (Throwable t) {
-			
+			aClientTest3 = null;
 		}
-		
-		return true;
+		if (aClientTest1 == null && aClientTest2 == null && aClientTest3 == null) {
+			isServer = true;
+		}
+		log("Loading "+EnviroSound.modid+" "+EnviroSound.version+" on the "+(isServer ? "Server" : "Client")+" side.");
+		return isServer;
 	}
-	
-	
+
+
 	@Mod.EventHandler
 	public void preInit(final FMLPreInitializationEvent event) {
 		EnviroSound.onServer = isServerSide();
