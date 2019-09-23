@@ -13,7 +13,6 @@
  *******************************************************************************/
 package net.alkalus.envirosound;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 import javax.sound.sampled.AudioFormat;
@@ -56,13 +54,12 @@ import paulscode.sound.SoundSystemConfig;
 public class EnviroSound {
 
 	public static final String DEPS = "before:computronics";
-	public static boolean onServer = false;
-
-
+	public static boolean onServer = false;	
 	
+	private static final VersionLoader LOADER = VersionLoader.getInstance();
 
 	public static String getVersion() {
-		return VersionLoader.getVersion();
+		return LOADER.VERSION;
 	}
 
 	public static class ProcThread extends Thread {
@@ -193,7 +190,7 @@ public class EnviroSound {
 	private static final Pattern stepPattern = Pattern.compile(".*step.*");
 	private static volatile boolean thread_alive;
 	private static final Pattern uiPattern = Pattern.compile(".*\\/ui\\/.*");
-	public static final String version = VersionLoader.getVersion();
+	public static final String version = getVersion();
 
 	public static void applyConfigChanges() {
 		EnviroSound.globalRolloffFactor = Config.rolloffFactor;
