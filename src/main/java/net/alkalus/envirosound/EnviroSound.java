@@ -35,6 +35,7 @@ import org.lwjgl.openal.EFX10;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -1385,7 +1386,7 @@ public class EnviroSound {
 		if (aClientTest1 == null && aClientTest2 == null && aClientTest3 == null) {
 			isServer = true;
 		}
-		log("Loading "+EnviroSound.modid+" "+EnviroSound.version+" on the "+(isServer ? "Server" : "Client")+" side.");
+		log("Loading "+EnviroSound.modid+" "+EnviroSound.getVersion()+" on the "+(isServer ? "Server" : "Client")+" side.");
 		return isServer;
 	}
 
@@ -1393,12 +1394,20 @@ public class EnviroSound {
 	@Mod.EventHandler
 	public void preInit(final FMLPreInitializationEvent event) {
 		EnviroSound.onServer = isServerSide();
-		Config.instance.preInit(event);		
+		Config.instance.preInit(event);	
+		log("Pre-Init Complete.");
 	}
 
 	@Mod.EventHandler
 	public void init(final FMLInitializationEvent event) {
-		Config.instance.init(event);		
+		Config.instance.init(event);
+		log("Init Complete.");		
+	}
+
+	@Mod.EventHandler
+	public void postInit(final FMLPostInitializationEvent event) {
+		Config.instance.postInit(event);
+		log("Post-Init Complete.");		
 	}
 
 }

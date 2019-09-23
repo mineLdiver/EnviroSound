@@ -13,14 +13,19 @@
  *******************************************************************************/
 package net.alkalus.envirosound;
 
+import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import cpw.mods.fml.client.config.IConfigElement;
 import cpw.mods.fml.client.event.ConfigChangedEvent;
+import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
@@ -125,6 +130,7 @@ public class Config {
 
 	public void init(final FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
+		EnviroSound.log("Registering Config Handler.");
 	}
 
 	@SubscribeEvent
@@ -136,13 +142,39 @@ public class Config {
 		}
 	}
 
+	private ModContainer CONTAINER;
+	private File configurationDir;
+	
 	public void preInit(final FMLPreInitializationEvent event) {
 		this.forgeConfig = new Configuration(
 				event.getSuggestedConfigurationFile()
 				);
+		
+		try {
+			Field modcontainer = FMLPreInitializationEvent.class.getDeclaredField("modContainer");
+			modcontainer.setAccessible(true);
+			CONTAINER = (ModContainer) modcontainer.get(event);
+			
+			Field jconfigurationDir = FMLPreInitializationEvent.class.getDeclaredField("configurationDir");
+			jconfigurationDir.setAccessible(true);
+			configurationDir = (File) jconfigurationDir.get(event);
+		}
+		catch (Throwable t) {}		
 		syncConfig();
 	}
 
+	public void postInit(final FMLPostInitializationEvent event) {
+		if (forgeConfig == null) {
+			if (CONTAINER != null) {
+				this.forgeConfig = new Configuration(configurationDir, EnviroSound.modid+".cfg");				
+			}
+			else {
+				this.forgeConfig = new Configuration(Minecraft.getMinecraft().mcDataDir, CONTAINER.getModId()+".cfg");
+			}			
+		}		
+		syncConfig();
+	}
+	
 	private void syncConfig() {
 		// General
 		Config.rolloffFactor = this.forgeConfig.getFloat(
