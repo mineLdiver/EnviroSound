@@ -8,24 +8,39 @@ jobs:
       
       
     environment:
-      JVM_OPTS: -Xmx3200m
+      JVM_OPTS: -Xms2048m Xmx4000m
       
       
     steps:
       - checkout
       
       - run:
-          name: Run build
+          name: Set Terminal
           command:  export TERM=${TERM:-dumb} 
           # && ./gradlew clean build
       
       - run: sudo chmod +x gradlew
-      
-      #https://files.minecraftforge.net/maven/net/minecraftforge/forge/1.7.10-10.13.4.1614-1.7.10/forge-1.7.10-10.13.4.1614-1.7.10-src.zip
-      
+
+        # Build Forge and MCP
+      - run:
+          name: Download Resource Builder [MCP/Forge]
+          command: wget https://alkcorp.overminddl1.com/GTPP_BuildRepo.sh
+                
       - restore_cache:
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "build.gradle" }}
+          key: jars-{{ checksum "GTPP_BuildRepo.sh" }}-{{ checksum  "GTPP_BuildRepo.sh" }}
+        
+      - run:
+          name: Run Resource Builder [MCP/Forge]
+          command: sh GTPP_BuildRepo.sh        
           
+        # Cache All Libs
+      - save_cache:
+          paths:
+            - ~/.gradle
+            - ~/home/circleci/repo
+          key: jars-{{ checksum "GTPP_BuildRepo.sh" }}-{{ checksum  "GTPP_BuildRepo.sh" }}
+          
+        # Build Mod  
       - run:
           name: Download Build Script
           command: wget https://alkcorp.overminddl1.com/GTPP_BuildScript.sh
