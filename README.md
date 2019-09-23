@@ -1,4 +1,6 @@
-# EnviroSound [1.7.10]
+# EnviroSound [1.7.10]  
+[![CircleCI](https://circleci.com/gh/alkcorp/EnviroSound/tree/1.7.10-backport.svg?style=svg)](https://circleci.com/gh/alkcorp/EnviroSound/tree/1.7.10-backport)
+
 A Minecraft mod that provides realistic sound attenuation, reverberation, and absorption through blocks.
 Previously known as Sound-Physics, I decided the name was a tad bland for what it did. I renamed it to mark my fork distictively, as any features I add may or may not work at all. :)
 
