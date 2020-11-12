@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.alkalus.envirosound.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  ],
+  "server": [
+  ],
+  "client": [
+    "client.MixinSoundHelper",
+    "client.MixinSourceLWJGLOpenAL",
+    "client.MixinLibraryLWJGLOpenAL",
+    "client.MixinDebug"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
