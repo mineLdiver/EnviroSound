@@ -6,6 +6,8 @@ import net.alkalus.envirosound.EnviroSound;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,6 +29,9 @@ public class MixinLibraryLWJGLOpenAL {
         System.out.println("loadSound(FileNameURL) from paulscode");
         buffer = EnviroSound.onLoadSound(buffer, filenameURL.getFilename());
     }
+
+    @Redirect(method = "init()V", at = @At(value = "INVOKE", target = "Lorg/lwjgl/openal/AL;create()V"), remap = false)
+    private void stopCreate() { }
     
     /*@Inject(method = "loadSound(Lpaulscode/sound/SoundBuffer;Ljava/lang/String;)Z", at = @At(value = "INVOKE", target = "Lpaulscode/sound/AudioFormat;getChannels()V", by = -12), remap = false)
     private void injectLoadSound2(SoundBuffer buffer, String s, CallbackInfoReturnable cir) {

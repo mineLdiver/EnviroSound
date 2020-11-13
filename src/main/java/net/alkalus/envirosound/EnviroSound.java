@@ -26,12 +26,8 @@ import java.util.regex.Pattern;
 import javax.sound.sampled.AudioFormat;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.ALC10;
-import org.lwjgl.openal.ALCcontext;
-import org.lwjgl.openal.ALCdevice;
-import org.lwjgl.openal.EFX10;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.openal.*;
 
 import net.minecraft.block.BlockBase;
 import net.minecraft.block.material.Material;
@@ -1184,6 +1180,11 @@ public class EnviroSound implements StationMod {
 
     private static void setupEFX() {
         // Get current context and device
+        try {
+            AL.create();
+        } catch (LWJGLException e) {
+            throw new RuntimeException(e);
+        }
         final ALCcontext currentContext = ALC10.alcGetCurrentContext();
         final ALCdevice currentDevice = ALC10.alcGetContextsDevice(
                 currentContext
@@ -1332,7 +1333,7 @@ public class EnviroSound implements StationMod {
     
     @Override
     public void preInit() {
-        ALC10.alcGetCurrentContext();
+        //ALC10.alcGetCurrentContext();
         Config.instance.preInit();    
         log("Pre-Init Complete.");
     }
