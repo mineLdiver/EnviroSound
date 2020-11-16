@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "soundphysics",
+  "id": "envirosound",
   "version": "${version}",
 
-  "name": "Sound Physics",
+  "name": "EnviroSound",
   "description": "Provides realistic sound attenuation, reverberation, and absorption through blocks.",
   "authors": [
     "SonicEther",
@@ -13,11 +13,12 @@
     "mysterywave"
   ],
   "contact": {
-    "homepage": "https://github.com/mysterywave/EnviroSound"
+    "sources": "https://github.com/mysterywave/EnviroSound",
+    "issues": "https://github.com/mysterywave/EnviroSound/issues"
   },
 
   "license": "GPL-3.0-only",
-  "icon": "assets/icon.png",
+  "icon": "/assets/envirosound/icon.png",
 
   "environment": "*",
   "entrypoints": {
@@ -26,10 +27,11 @@
     ]
   },
   "mixins": [
-    "mixins.json"
+    "envirosound.mixins.json"
   ],
 
   "depends": {
-    "minecraft": "1.0.0-beta.7.3"
+    "minecraft": "1.0.0-beta.7.3",
+    "stationloader": ">=1.3"
   }
 }
