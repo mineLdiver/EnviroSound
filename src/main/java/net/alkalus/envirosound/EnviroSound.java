@@ -13,7 +13,6 @@
  *******************************************************************************/
 package net.alkalus.envirosound;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -25,6 +24,10 @@ import java.util.regex.Pattern;
 
 import javax.sound.sampled.AudioFormat;
 
+import net.modificationstation.stationapi.api.common.event.EventListener;
+import net.modificationstation.stationapi.api.common.event.mod.Init;
+import net.modificationstation.stationapi.api.common.mod.entrypoint.Entrypoint;
+import net.modificationstation.stationapi.api.common.mod.entrypoint.EventBusPolicy;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.*;
@@ -34,7 +37,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityBase;
 import net.minecraft.tileentity.TileEntityBase;
-import net.minecraft.util.maths.MathHelper;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.maths.Vec3f;
 import net.minecraft.block.BlockSounds;
@@ -45,10 +47,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
 
-import net.modificationstation.stationloader.api.common.mod.StationMod;
-
 @Environment(EnvType.CLIENT)
-public class EnviroSound implements StationMod {
+@Entrypoint(eventBus = @EventBusPolicy(registerInstance = false))
+public class EnviroSound {
     // THESE VARIABLES ARE CONSTANTLY ACCESSED AND USED BY ASM INJECTED CODE! DO
     // NOT REMOVE!
     public static int attenuationModel = SoundSystemConfig.ATTENUATION_ROLLOFF;
@@ -66,7 +67,7 @@ public class EnviroSound implements StationMod {
     public static float globalVolumeMultiplier = 4.20f;
     private static String lastSoundName;
     private static Minecraft mc;
-    public static final String mcVersion = "1.7.10";
+    public static final String mcVersion = "b1.7.3";
     public static final String modid = "EnviroSound";
     private static final String logPrefix = "["+EnviroSound.modid+"]";
     private static ProcThread proc_thread;
@@ -1331,10 +1332,10 @@ public class EnviroSound implements StationMod {
         }
     }
     
-    @Override
-    public void preInit() {
+    @EventListener
+    private static void init(Init event) {
         //ALC10.alcGetCurrentContext();
-        Config.instance.preInit();    
-        log("Pre-Init Complete.");
+        Config.instance.init();
+        log("Init Complete.");
     }
 }

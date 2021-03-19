@@ -116,7 +116,7 @@ public class Config {
 
     private File configurationDir;
     
-    public void preInit() {
+    public void init() {
         syncConfig();
     }
     
