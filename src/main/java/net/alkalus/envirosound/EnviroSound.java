@@ -13,39 +13,38 @@
  *******************************************************************************/
 package net.alkalus.envirosound;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.regex.Pattern;
-
-import javax.sound.sampled.AudioFormat;
-
-import net.modificationstation.stationapi.api.common.event.EventListener;
-import net.modificationstation.stationapi.api.common.event.mod.Init;
-import net.modificationstation.stationapi.api.common.mod.entrypoint.Entrypoint;
-import net.modificationstation.stationapi.api.common.mod.entrypoint.EventBusPolicy;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.openal.*;
-
+import net.alkalus.envirosound.mixin.client.Vec3fAccessor;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.BlockBase;
+import net.minecraft.block.BlockSounds;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityBase;
 import net.minecraft.tileentity.TileEntityBase;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.maths.Vec3f;
-import net.minecraft.block.BlockSounds;
+import net.modificationstation.stationapi.api.common.event.EventListener;
+import net.modificationstation.stationapi.api.common.event.mod.Init;
+import net.modificationstation.stationapi.api.common.mod.entrypoint.Entrypoint;
+import net.modificationstation.stationapi.api.common.mod.entrypoint.EventBusPolicy;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.AL11;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCcontext;
+import org.lwjgl.openal.ALCdevice;
+import org.lwjgl.openal.EFX10;
 import paulscode.sound.SoundBuffer;
 import paulscode.sound.SoundSystemConfig;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.loader.api.FabricLoader;
+import javax.sound.sampled.*;
+import java.nio.*;
+import java.util.*;
+import java.util.regex.*;
 
 @Environment(EnvType.CLIENT)
 @Entrypoint(eventBus = @EventBusPolicy(registerInstance = false))
@@ -72,7 +71,7 @@ public class EnviroSound {
     private static final String logPrefix = "["+EnviroSound.modid+"]";
     private static ProcThread proc_thread;
 
-    private static final Pattern blockPattern = Pattern.compile(".*block.*");
+    private static final Pattern blockPattern = Pattern.compile(".*tile.*");
     private static final Pattern clickPattern = Pattern.compile(".*random.click.*");
     private static final Pattern noteBlockPattern = Pattern.compile(".*note/.*");
     private static final Pattern rainPattern = Pattern.compile(".*rain.*");
@@ -211,11 +210,11 @@ public class EnviroSound {
      * CALLED BY ASM INJECTED CODE!
      */
     public static double calculateEntitySoundOffset(final EntityBase entity, final String name) {
-        if (name != null) {
-            if (stepPattern.matcher(name).matches()) {
-                return 0;
-            }
-        }
+//        if (name != null) {
+//            if (stepPattern.matcher(name).matches()) {
+//                return 0;
+//            }
+//        }
         return entity.getEyeHeight();
     }
 
@@ -322,30 +321,35 @@ public class EnviroSound {
             final float absorptionCoeff = Config.globalBlockAbsorption * 3.0f;
 
             final Vec3f playerPos = Vec3f.method_1293(
-                    EnviroSound.mc.player.x, EnviroSound.mc.player.y
-                    + EnviroSound.mc.player.getEyeHeight(), EnviroSound.mc.player.z
+                    EnviroSound.mc.player.x, EnviroSound.mc.player.y, EnviroSound.mc.player.z
                     );
             final Vec3f soundPos = EnviroSound.offsetSoundByName(
                     x, y, z, playerPos, name
                     );
-            final Vec3f normalToPlayer = playerPos.method_1307(soundPos).method_1296();
+            final Vec3f normalToPlayer;
+            synchronized (Vec3fAccessor.getField_1588()) {
+                normalToPlayer = playerPos.method_1307(soundPos).method_1296();
+            }
 
             float snowFactor = 0.0f;
 
             if (EnviroSound.mc.level.isRaining()) {
-                final Vec3f middlePos = playerPos.method_1301(
-                        soundPos.x, soundPos.y, soundPos.z
-                        );
+                Vec3f middlePos;
+                synchronized (Vec3fAccessor.getField_1588()) {
+                    middlePos = playerPos.method_1301(
+                            soundPos.x, soundPos.y, soundPos.z
+                    );
+                }
                 middlePos.x = middlePos.x * 0.5d;
                 middlePos.y = middlePos.y * 0.5d;
                 middlePos.z = middlePos.z * 0.5d;
                 final int snowingPlayer = EnviroSound.isSnowingAt(
                         playerPos, false
-                        );
+                );
                 final int snowingSound = EnviroSound.isSnowingAt(soundPos, false);
                 final int snowingMiddle = EnviroSound.isSnowingAt(
                         middlePos, false
-                        );
+                );
                 snowFactor = (snowingPlayer * 0.25f) + (snowingMiddle * 0.5f)
                         + (snowingSound * 0.25f);
             }
@@ -380,9 +384,12 @@ public class EnviroSound {
             float occlusionAccumulation = 0.0f;
 
             for (int i = 0; i < 10; i++) {
-                final HitResult rayHit = EnviroSound.mc.level.method_161(
-                        rayOrigin, playerPos, true
-                        );
+                HitResult rayHit;
+                synchronized (Vec3fAccessor.getField_1588()) {
+                    rayHit = EnviroSound.mc.level.method_161(
+                            rayOrigin, playerPos, true
+                    );
+                }
 
                 if (rayHit == null) {
                     break;
@@ -402,11 +409,11 @@ public class EnviroSound {
                 rayOrigin = Vec3f.method_1293(
                         rayHit.field_1988.x + (normalToPlayer.x
                                 * 0.1), rayHit.field_1988.y
-                        + (normalToPlayer.y
+                                + (normalToPlayer.y
                                 * 0.1), rayHit.field_1988.z
-                        + (normalToPlayer.z
+                                + (normalToPlayer.z
                                 * 0.1)
-                        );
+                );
             }
 
             directCutoff = (float) Math.exp(
@@ -459,24 +466,27 @@ public class EnviroSound {
 
                 final Vec3f rayDir = Vec3f.method_1293(
                         Math.cos(latitude) * Math.cos(longitude), Math.cos(latitude) * Math.sin(longitude), Math.sin(latitude)
-                        );
+                );
 
                 final Vec3f rayStart = Vec3f.method_1293(
                         soundPos.x, soundPos.y, soundPos.z
-                        );
+                );
 
                 final Vec3f rayEnd = Vec3f.method_1293(
                         rayStart.x
-                        + (rayDir.x * maxDistance), rayStart.y
-                        + (rayDir.y
+                                + (rayDir.x * maxDistance), rayStart.y
+                                + (rayDir.y
                                 * maxDistance), rayStart.z
-                        + (rayDir.z
+                                + (rayDir.z
                                 * maxDistance)
-                        );
+                );
 
-                final HitResult rayHit = EnviroSound.mc.level.method_161(
-                        rayStart, rayEnd, true
-                        );
+                HitResult rayHit;
+                synchronized (Vec3fAccessor.getField_1588()) {
+                    rayHit = EnviroSound.mc.level.method_161(
+                            rayStart, rayEnd, true
+                    );
+                }
 
                 if (rayHit != null) {
                     final double rayLength = soundPos.method_1294(rayHit.field_1988);
@@ -486,7 +496,7 @@ public class EnviroSound {
                     Vec3f lastHitPos = rayHit.field_1988;
                     Vec3f lastHitNormal = EnviroSound.getNormalFromFacing(
                             rayHit.field_1987
-                            );
+                    );
                     Vec3f lastRayDir = rayDir;
 
                     float totalRayDistance = (float) rayLength;
@@ -495,42 +505,44 @@ public class EnviroSound {
                     for (int j = 0; j < rayBounces; j++) {
                         final Vec3f newRayDir = EnviroSound.reflect(
                                 lastRayDir, lastHitNormal
-                                );
+                        );
                         // Vec3f newRayDir = lastHitNormal;
                         final Vec3f newRayStart = Vec3f.method_1293(
                                 lastHitPos.x + (lastHitNormal.x
                                         * 0.01), lastHitPos.y
-                                + (lastHitNormal.y
+                                        + (lastHitNormal.y
                                         * 0.01), lastHitPos.z
-                                + (lastHitNormal.z
+                                        + (lastHitNormal.z
                                         * 0.01)
-                                );
+                        );
                         final Vec3f newRayEnd = Vec3f.method_1293(
                                 newRayStart.x + (newRayDir.x
                                         * maxDistance), newRayStart.y
-                                + (newRayDir.y
+                                        + (newRayDir.y
                                         * maxDistance), newRayStart.z
-                                + (newRayDir.z
+                                        + (newRayDir.z
                                         * maxDistance)
-                                );
+                        );
 
-                        final HitResult newRayHit = EnviroSound.mc.level.method_161(
-                                newRayStart, newRayEnd, true
-                                );
+                        HitResult newRayHit;
+                        synchronized (Vec3fAccessor.getField_1588()) {
+                            newRayHit = EnviroSound.mc.level.method_161(
+                                    newRayStart, newRayEnd, true
+                            );
+                        }
 
                         float energyTowardsPlayer = 0.25f;
                         final float blockReflectivity = EnviroSound.getBlockReflectivity(
                                 lastHitBlock
-                                );
+                        );
                         energyTowardsPlayer *= (blockReflectivity * 0.75f) + 0.25f;
 
                         if (newRayHit == null) {
                             totalRayDistance += lastHitPos.method_1294(playerPos);
-                        }
-                        else {
+                        } else {
                             final double newRayLength = lastHitPos.method_1294(
                                     newRayHit.field_1988
-                                    );
+                            );
 
                             bounceReflectivityRatio[j] += blockReflectivity;
 
@@ -539,7 +551,7 @@ public class EnviroSound {
                             lastHitPos = newRayHit.field_1988;
                             lastHitNormal = EnviroSound.getNormalFromFacing(
                                     newRayHit.field_1987
-                                    );
+                            );
                             lastRayDir = newRayDir;
                             lastHitBlock = BlockBase.BY_ID[EnviroSound.mc.level.getTileId(newRayHit.x, newRayHit.y, newRayHit.z)];
 
@@ -552,15 +564,18 @@ public class EnviroSound {
                                 final Vec3f finalRayStart = Vec3f.method_1293(
                                         lastHitPos.x + (lastHitNormal.x
                                                 * 0.01), lastHitPos.y
-                                        + (lastHitNormal.y
+                                                + (lastHitNormal.y
                                                 * 0.01), lastHitPos.z
-                                        + (lastHitNormal.z
+                                                + (lastHitNormal.z
                                                 * 0.01)
-                                        );
+                                );
 
-                                final HitResult finalRayHit = EnviroSound.mc.level.method_161(
-                                        finalRayStart, playerPos, true
-                                        );
+                                HitResult finalRayHit;
+                                synchronized (Vec3fAccessor.getField_1588()) {
+                                    finalRayHit = EnviroSound.mc.level.method_161(
+                                            finalRayStart, playerPos, true
+                                    );
+                                }
 
                                 if (finalRayHit == null) {
                                     // log("Secondary ray hit the player!");
@@ -571,20 +586,20 @@ public class EnviroSound {
 
                         final float reflectionDelay = (float) Math.max(
                                 totalRayDistance, 0.0
-                                ) * 0.12f * blockReflectivity;
+                        ) * 0.12f * blockReflectivity;
 
                         final float cross0 = 1.0f - clamp_float(
                                 Math.abs(reflectionDelay - 0.0f), 0.0f, 1.0f
-                                );
+                        );
                         final float cross1 = 1.0f - clamp_float(
                                 Math.abs(reflectionDelay - 1.0f), 0.0f, 1.0f
-                                );
+                        );
                         final float cross2 = 1.0f - clamp_float(
                                 Math.abs(reflectionDelay - 2.0f), 0.0f, 1.0f
-                                );
+                        );
                         final float cross3 = clamp_float(
                                 reflectionDelay - 2.0f, 0.0f, 1.0f
-                                );
+                        );
 
                         sendGain0 += cross0 * energyTowardsPlayer * 6.4f
                                 * rcpTotalRays;
@@ -847,8 +862,9 @@ public class EnviroSound {
         if (
                 //(category == SoundCategory.BLOCKS) ||
                 EnviroSound.blockPattern.matcher(name).matches() ||
+                (!((soundY % 1.0) < 0.001) && EnviroSound.stepPattern.matcher(name).matches()) ||
                 ((name == "openal") && !EnviroSound.mc.level.isAir((int) Math.floor(soundX), (int) Math.floor(soundY), (int) Math.floor(soundZ)))) {
-            // The ray will probably hit the block that it's emitting from
+            // The ray will probably hit the block that it's emitting method_1293
             // before
             // escaping. Offset the ray start position towards the player by the
             // diagonal half length of a cube
@@ -963,7 +979,7 @@ public class EnviroSound {
         EnviroSound.evaluateEnvironment(
                 sourceID, x, y, z, soundName
                 );
-        /*if (!Config.dynamicEnvironementEvalutaion) {
+        if (!Config.dynamicEnvironementEvalutaion) {
             return;
         }
         // TODO: sound category
@@ -979,7 +995,7 @@ public class EnviroSound {
         final Source tmp = new Source(
                 sourceID, x, y, z, soundName
                 );
-        EnviroSound.source_check_add(tmp);*/
+        EnviroSound.source_check_add(tmp);
     }
 
     /**
@@ -995,7 +1011,7 @@ public class EnviroSound {
                 );
     }
 
-    /*private static EnumFacing getFacingFromSide(final int side) {
+    /*private static EnumFacing getFacingmethod_1293Side(final int side) {
         switch (side) {
             case 0: return EnumFacing.DOWN;
             case 1: return EnumFacing.UP;

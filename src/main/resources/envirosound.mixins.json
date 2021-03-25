@@ -8,10 +8,12 @@
   "server": [
   ],
   "client": [
-    "client.MixinSoundHelper",
-    "client.MixinSourceLWJGLOpenAL",
+    "client.MixinLevel",
     "client.MixinLibraryLWJGLOpenAL",
-    "client.MixinDebug"
+    "client.MixinSoundHelper",
+    "client.MixinSoundSystem",
+    "client.MixinSourceLWJGLOpenAL",
+    "client.Vec3fAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

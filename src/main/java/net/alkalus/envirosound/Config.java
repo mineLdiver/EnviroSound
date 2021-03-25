@@ -13,10 +13,7 @@
  *******************************************************************************/
 package net.alkalus.envirosound;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
 
 // TODO: Convert to stationloader
 public class Config {
@@ -151,8 +148,8 @@ public class Config {
         Config.clothReflectivity = 0.25f;
         Config.sandReflectivity = 0.2f;
         
-        Config.computronicsPatching = true;
-        Config.autoSteroDownmix = true;
+        Config.computronicsPatching = false;
+        Config.autoSteroDownmix = false;
 
         // misc
         Config.autoSteroDownmixLogging = false;

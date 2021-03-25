@@ -93,6 +93,10 @@ dependencies {
 	modImplementation "com.github.minecraft-cursed-legacy:cursed-fabric-loader:${project.loader_version}"
 
 	modImplementation "net.modificationstation:StationAPI:${project.stapi_version}"
+
+	modImplementation("com.github.calmilamsy:HowManyItems-Fabric-Unofficial:63fc137") {
+		exclude module: "StationAPI"
+	}
 }
 
 processResources {
