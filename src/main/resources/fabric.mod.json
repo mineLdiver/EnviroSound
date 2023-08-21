@@ -14,9 +14,9 @@
     "mine_diver"
   ],
   "contact": {
-    "homepage": "https://glass-repo.net/repo/mod/envirosound",
-    "sources": "https://github.com/mysterywave/EnviroSound",
-    "issues": "https://github.com/mysterywave/EnviroSound/issues"
+    "homepage": "https://modrinth.com/mod/envirosoundbeta",
+    "sources": "https://github.com/mineLdiver/EnviroSound",
+    "issues": "https://github.com/mineLdiver/EnviroSound/issues"
   },
 
   "license": "GPL-3.0-only",
