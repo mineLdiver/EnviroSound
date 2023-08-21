@@ -14,41 +14,36 @@
 package net.alkalus.envirosound;
 
 import net.alkalus.envirosound.mixin.client.Vec3fAccessor;
+import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.BlockBase;
-import net.minecraft.block.BlockSounds;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.Block;
+import net.minecraft.block.Material;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.class_27;
+import net.minecraft.class_475;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityBase;
-import net.minecraft.tileentity.TileEntityBase;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.maths.Vec3f;
-import net.modificationstation.stationapi.api.common.event.EventListener;
-import net.modificationstation.stationapi.api.common.event.mod.Init;
-import net.modificationstation.stationapi.api.common.mod.entrypoint.Entrypoint;
-import net.modificationstation.stationapi.api.common.mod.entrypoint.EventBusPolicy;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
-import org.lwjgl.openal.AL;
-import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.ALC10;
-import org.lwjgl.openal.ALCcontext;
-import org.lwjgl.openal.ALCdevice;
-import org.lwjgl.openal.EFX10;
+import org.lwjgl.openal.*;
 import paulscode.sound.SoundBuffer;
 import paulscode.sound.SoundSystemConfig;
 
-import javax.sound.sampled.*;
-import java.nio.*;
-import java.util.*;
-import java.util.regex.*;
+import javax.sound.sampled.AudioFormat;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.regex.Pattern;
 
 @Environment(EnvType.CLIENT)
-@Entrypoint(eventBus = @EventBusPolicy(registerInstance = false))
-public class EnviroSound {
+public class EnviroSound implements ClientModInitializer {
     // THESE VARIABLES ARE CONSTANTLY ACCESSED AND USED BY ASM INJECTED CODE! DO
     // NOT REMOVE!
     public static int attenuationModel = SoundSystemConfig.ATTENUATION_ROLLOFF;
@@ -209,13 +204,13 @@ public class EnviroSound {
     /**
      * CALLED BY ASM INJECTED CODE!
      */
-    public static double calculateEntitySoundOffset(final EntityBase entity, final String name) {
+    public static double calculateEntitySoundOffset(final Entity entity, final String name) {
 //        if (name != null) {
 //            if (stepPattern.matcher(name).matches()) {
 //                return 0;
 //            }
 //        }
-        return entity.getEyeHeight();
+        return entity.method_1366();
     }
 
     protected static boolean checkErrorLog(final String errorMessage) {
@@ -251,7 +246,7 @@ public class EnviroSound {
         return true;
     }
 
-    public static Vec3f computronicsOffset(final Vec3f or, final TileEntityBase te) {
+    public static Vec3d computronicsOffset(final Vec3d or, final BlockEntity te) {
         return or;
     }
 
@@ -296,7 +291,7 @@ public class EnviroSound {
         try {
             // TODO: sound category
             if ((EnviroSound.mc.player == null)
-                    || (EnviroSound.mc.level == null) || (y <= 0)
+                    || (EnviroSound.mc.world == null) || (y <= 0)
                     //|| (category == SoundCategory.RECORDS)
                     //|| (category == SoundCategory.MUSIC)
                 ) {
@@ -320,23 +315,23 @@ public class EnviroSound {
             float directCutoff = 1.0f;
             final float absorptionCoeff = Config.globalBlockAbsorption * 3.0f;
 
-            final Vec3f playerPos = Vec3f.method_1293(
+            final Vec3d playerPos = Vec3d.create(
                     EnviroSound.mc.player.x, EnviroSound.mc.player.y, EnviroSound.mc.player.z
                     );
-            final Vec3f soundPos = EnviroSound.offsetSoundByName(
+            final Vec3d soundPos = EnviroSound.offsetSoundByName(
                     x, y, z, playerPos, name
                     );
-            final Vec3f normalToPlayer;
+            final Vec3d normalToPlayer;
             synchronized (Vec3fAccessor.getField_1588()) {
-                normalToPlayer = playerPos.method_1307(soundPos).method_1296();
+                normalToPlayer = playerPos.clone(soundPos).normalize();
             }
 
             float snowFactor = 0.0f;
 
-            if (EnviroSound.mc.level.isRaining()) {
-                Vec3f middlePos;
+            if (EnviroSound.mc.world.method_270()) {
+                Vec3d middlePos;
                 synchronized (Vec3fAccessor.getField_1588()) {
-                    middlePos = playerPos.method_1301(
+                    middlePos = playerPos.add(
                             soundPos.x, soundPos.y, soundPos.z
                     );
                 }
@@ -359,7 +354,7 @@ public class EnviroSound {
             if (snowFactor > 0.0f) {
                 airAbsorptionFactor = Math.max(
                         Config.snowAirAbsorptionFactor
-                        * EnviroSound.mc.level.getRainGradient(1.0f) * snowFactor, airAbsorptionFactor
+                        * EnviroSound.mc.world.method_221(1.0f) * snowFactor, airAbsorptionFactor
                         );
             }
 
@@ -379,14 +374,14 @@ public class EnviroSound {
             (long)time
         );*/
 
-            Vec3f rayOrigin = soundPos;
+            Vec3d rayOrigin = soundPos;
 
             float occlusionAccumulation = 0.0f;
 
             for (int i = 0; i < 10; i++) {
-                HitResult rayHit;
+                class_27 rayHit;
                 synchronized (Vec3fAccessor.getField_1588()) {
-                    rayHit = EnviroSound.mc.level.method_161(
+                    rayHit = EnviroSound.mc.world.method_161(
                             rayOrigin, playerPos, true
                     );
                 }
@@ -395,18 +390,18 @@ public class EnviroSound {
                     break;
                 }
 
-                final BlockBase blockHit = BlockBase.BY_ID[EnviroSound.mc.level.getTileId(rayHit.x, rayHit.y, rayHit.z)];
+                final Block blockHit = Block.BLOCKS[EnviroSound.mc.world.getBlockId(rayHit.field_1984, rayHit.field_1985, rayHit.field_1986)];
 
                 float blockOcclusion = 1.0f;
 
-                if (!blockHit.isFullOpaque()) {
+                if (!blockHit.method_1620()) {
                     // log("not a solid block!");
                     blockOcclusion *= 0.15f;
                 }
 
                 occlusionAccumulation += blockOcclusion;
 
-                rayOrigin = Vec3f.method_1293(
+                rayOrigin = Vec3d.create(
                         rayHit.field_1988.x + (normalToPlayer.x
                                 * 0.1), rayHit.field_1988.y
                                 + (normalToPlayer.y
@@ -464,15 +459,15 @@ public class EnviroSound {
                 final float longitude = gAngle * fi;
                 final float latitude = (float) Math.asin((fiN * 2.0f) - 1.0f);
 
-                final Vec3f rayDir = Vec3f.method_1293(
+                final Vec3d rayDir = Vec3d.create(
                         Math.cos(latitude) * Math.cos(longitude), Math.cos(latitude) * Math.sin(longitude), Math.sin(latitude)
                 );
 
-                final Vec3f rayStart = Vec3f.method_1293(
+                final Vec3d rayStart = Vec3d.create(
                         soundPos.x, soundPos.y, soundPos.z
                 );
 
-                final Vec3f rayEnd = Vec3f.method_1293(
+                final Vec3d rayEnd = Vec3d.create(
                         rayStart.x
                                 + (rayDir.x * maxDistance), rayStart.y
                                 + (rayDir.y
@@ -481,33 +476,33 @@ public class EnviroSound {
                                 * maxDistance)
                 );
 
-                HitResult rayHit;
+                class_27 rayHit;
                 synchronized (Vec3fAccessor.getField_1588()) {
-                    rayHit = EnviroSound.mc.level.method_161(
+                    rayHit = EnviroSound.mc.world.method_161(
                             rayStart, rayEnd, true
                     );
                 }
 
                 if (rayHit != null) {
-                    final double rayLength = soundPos.method_1294(rayHit.field_1988);
+                    final double rayLength = soundPos.distanceTo(rayHit.field_1988);
 
                     // Additional bounces
-                    BlockBase lastHitBlock = BlockBase.BY_ID[EnviroSound.mc.level.getTileId(rayHit.x, rayHit.y, rayHit.z)];
-                    Vec3f lastHitPos = rayHit.field_1988;
-                    Vec3f lastHitNormal = EnviroSound.getNormalFromFacing(
+                    Block lastHitBlock = Block.BLOCKS[EnviroSound.mc.world.getBlockId(rayHit.field_1984, rayHit.field_1985, rayHit.field_1986)];
+                    Vec3d lastHitPos = rayHit.field_1988;
+                    Vec3d lastHitNormal = EnviroSound.getNormalFromFacing(
                             rayHit.field_1987
                     );
-                    Vec3f lastRayDir = rayDir;
+                    Vec3d lastRayDir = rayDir;
 
                     float totalRayDistance = (float) rayLength;
 
                     // Secondary ray bounces
                     for (int j = 0; j < rayBounces; j++) {
-                        final Vec3f newRayDir = EnviroSound.reflect(
+                        final Vec3d newRayDir = EnviroSound.reflect(
                                 lastRayDir, lastHitNormal
                         );
-                        // Vec3f newRayDir = lastHitNormal;
-                        final Vec3f newRayStart = Vec3f.method_1293(
+                        // Vec3d newRayDir = lastHitNormal;
+                        final Vec3d newRayStart = Vec3d.create(
                                 lastHitPos.x + (lastHitNormal.x
                                         * 0.01), lastHitPos.y
                                         + (lastHitNormal.y
@@ -515,7 +510,7 @@ public class EnviroSound {
                                         + (lastHitNormal.z
                                         * 0.01)
                         );
-                        final Vec3f newRayEnd = Vec3f.method_1293(
+                        final Vec3d newRayEnd = Vec3d.create(
                                 newRayStart.x + (newRayDir.x
                                         * maxDistance), newRayStart.y
                                         + (newRayDir.y
@@ -524,9 +519,9 @@ public class EnviroSound {
                                         * maxDistance)
                         );
 
-                        HitResult newRayHit;
+                        class_27 newRayHit;
                         synchronized (Vec3fAccessor.getField_1588()) {
-                            newRayHit = EnviroSound.mc.level.method_161(
+                            newRayHit = EnviroSound.mc.world.method_161(
                                     newRayStart, newRayEnd, true
                             );
                         }
@@ -538,9 +533,9 @@ public class EnviroSound {
                         energyTowardsPlayer *= (blockReflectivity * 0.75f) + 0.25f;
 
                         if (newRayHit == null) {
-                            totalRayDistance += lastHitPos.method_1294(playerPos);
+                            totalRayDistance += lastHitPos.distanceTo(playerPos);
                         } else {
-                            final double newRayLength = lastHitPos.method_1294(
+                            final double newRayLength = lastHitPos.distanceTo(
                                     newRayHit.field_1988
                             );
 
@@ -553,7 +548,7 @@ public class EnviroSound {
                                     newRayHit.field_1987
                             );
                             lastRayDir = newRayDir;
-                            lastHitBlock = BlockBase.BY_ID[EnviroSound.mc.level.getTileId(newRayHit.x, newRayHit.y, newRayHit.z)];
+                            lastHitBlock = Block.BLOCKS[EnviroSound.mc.world.getBlockId(newRayHit.field_1984, newRayHit.field_1985, newRayHit.field_1986)];
 
                             // Cast one final ray towards the player. If it's
                             // unobstructed, then the sound source and the player
@@ -561,7 +556,7 @@ public class EnviroSound {
                             if ((Config.simplerSharedAirspaceSimulation
                                     && (j == (rayBounces - 1)))
                                     || !Config.simplerSharedAirspaceSimulation) {
-                                final Vec3f finalRayStart = Vec3f.method_1293(
+                                final Vec3d finalRayStart = Vec3d.create(
                                         lastHitPos.x + (lastHitNormal.x
                                                 * 0.01), lastHitPos.y
                                                 + (lastHitNormal.y
@@ -570,9 +565,9 @@ public class EnviroSound {
                                                 * 0.01)
                                 );
 
-                                HitResult finalRayHit;
+                                class_27 finalRayHit;
                                 synchronized (Vec3fAccessor.getField_1588()) {
-                                    finalRayHit = EnviroSound.mc.level.method_161(
+                                    finalRayHit = EnviroSound.mc.world.method_161(
                                             finalRayStart, playerPos, true
                                     );
                                 }
@@ -708,22 +703,22 @@ public class EnviroSound {
         }
     }
 
-    private static float getBlockReflectivity(final BlockBase block) {
-        final BlockSounds stepSound = block.sounds;
-        final Material blockMaterial = block.material;
+    private static float getBlockReflectivity(final Block block) {
+        final class_475 stepSound = block.field_1926;
+        final Material blockMaterial = block.field_1900;
 
         float reflectivity = 0.5f;
 
-        if ((stepSound == BlockBase.PISTON_SOUNDS)) {
+        if ((stepSound == Block.field_1932)) {
             reflectivity = Config.stoneReflectivity;
         }
-        else if (stepSound == BlockBase.WOOD_SOUNDS) {
+        else if (stepSound == Block.field_1929) {
             reflectivity = Config.woodReflectivity;
         }
-        else if ((stepSound == BlockBase.GRAVEL_SOUNDS)
-                || (stepSound == BlockBase.GRASS_SOUNDS)) {
-            if ((blockMaterial == Material.PLANT)
-                    || (blockMaterial == Material.ORGANIC)
+        else if ((stepSound == Block.field_1930)
+                || (stepSound == Block.field_1931)) {
+            if ((blockMaterial == Material.field_988)
+                    || (blockMaterial == Material.SOLID_ORGANIC)
                     || (blockMaterial == Material.LEAVES)) {
                 reflectivity = Config.plantReflectivity;
             }
@@ -731,16 +726,16 @@ public class EnviroSound {
                 reflectivity = Config.groundReflectivity;
             }
         }
-        else if (stepSound == BlockBase.METAL_SOUNDS) {
+        else if (stepSound == Block.field_1933) {
             reflectivity = Config.metalReflectivity;
         }
-        else if (stepSound == BlockBase.GLASS_SOUNDS) {
+        else if (stepSound == Block.field_1934) {
             reflectivity = Config.glassReflectivity;
         }
-        else if (stepSound == BlockBase.WOOL_SOUNDS) {
+        else if (stepSound == Block.field_1935) {
             reflectivity = Config.clothReflectivity;
         }
-        else if (stepSound == BlockBase.SAND_SOUNDS) {
+        else if (stepSound == Block.field_1936) {
             reflectivity = Config.sandReflectivity;
         }
 
@@ -749,7 +744,7 @@ public class EnviroSound {
         return reflectivity;
     }
 
-    private static Vec3f getNormalFromFacing(final int sideHit) {
+    private static Vec3d getNormalFromFacing(final int sideHit) {
         int x = 0;
         int y = 0;
         int z = 0;
@@ -773,7 +768,7 @@ public class EnviroSound {
                 x++;
                 break;
         }
-        return Vec3f.method_1293(x, y, z);
+        return Vec3d.create(x, y, z);
     }
 
     /**
@@ -800,17 +795,17 @@ public class EnviroSound {
 
     // Copy of isRainingAt (1.12.2)
     private static int isSnowingAt(
-            final Vec3f position, final boolean check_rain
+            final Vec3d position, final boolean check_rain
             ) {
-        if (check_rain && !EnviroSound.mc.level.isRaining()) {
+        if (check_rain && !EnviroSound.mc.world.method_270()) {
             return 0;
         }
-        else if (!EnviroSound.mc.level.isAboveGroundCached(
+        else if (!EnviroSound.mc.world.method_249(
                 (int) position.x, (int) position.y, (int) position.z
                 )) {
             return 0;
         }
-        else if (EnviroSound.mc.level.getHeight( // mcp 1.7.10: getPrecipitationHeight
+        else if (EnviroSound.mc.world.method_222( // mcp 1.7.10: getPrecipitationHeight
                 (int) position.x, (int) position.z
                 ) > position.y) {
             return 0;
@@ -821,11 +816,11 @@ public class EnviroSound {
             else if (cansnow) return true;
             else return false;*/
             // canSnowAt() but the name isn't there
-            return (EnviroSound.mc.level.canRainAt( // mcp 1.7.10: func_147478_e
+            return (EnviroSound.mc.world.method_267( // mcp 1.7.10: func_147478_e
                     (int) position.x, (int) position.y, (int) position.z
-                    ) || EnviroSound.mc.level.getBiomeSource().getBiome(
+                    ) || EnviroSound.mc.world.method_1781().method_1787(
                             (int) position.x, (int) position.z
-                            ).canSnow()) ? 1 : 0;
+                            ).method_793()) ? 1 : 0;
         }
     }
 
@@ -841,8 +836,8 @@ public class EnviroSound {
                 );
     }
 
-    private static Vec3f offsetSoundByName(
-            final double soundX, final double soundY, final double soundZ, final Vec3f playerPos, final String name
+    private static Vec3d offsetSoundByName(
+            final double soundX, final double soundY, final double soundZ, final Vec3d playerPos, final String name
             ) {
         double offsetX = 0.0;
         double offsetY = 0.0;
@@ -863,7 +858,7 @@ public class EnviroSound {
                 //(category == SoundCategory.BLOCKS) ||
                 EnviroSound.blockPattern.matcher(name).matches() ||
                 (!((soundY % 1.0) < 0.001) && EnviroSound.stepPattern.matcher(name).matches()) ||
-                ((name == "openal") && !EnviroSound.mc.level.isAir((int) Math.floor(soundX), (int) Math.floor(soundY), (int) Math.floor(soundZ)))) {
+                ((name == "openal") && !EnviroSound.mc.world.method_234((int) Math.floor(soundX), (int) Math.floor(soundY), (int) Math.floor(soundZ)))) {
             // The ray will probably hit the block that it's emitting method_1293
             // before
             // escaping. Offset the ray start position towards the player by the
@@ -886,7 +881,7 @@ public class EnviroSound {
             offsetZ += tempNormZ * offsetTowardsPlayer;
         }
 
-        return Vec3f.method_1293(
+        return Vec3d.create(
                 soundX + offsetX, soundY + offsetY, soundZ + offsetZ
                 );
     }
@@ -903,7 +898,7 @@ public class EnviroSound {
         }
         // TODO: sound category
         if ((EnviroSound.mc.player == null)
-                || (EnviroSound.mc.level == null)
+                || (EnviroSound.mc.world == null)
                 //|| (EnviroSound.lastSoundCategory == SoundCategory.RECORDS)
                 //|| (EnviroSound.lastSoundCategory == SoundCategory.MUSIC)
                 || EnviroSound.uiPattern.matcher(filename).matches() || EnviroSound.clickPattern.matcher(filename).matches()) {
@@ -984,7 +979,7 @@ public class EnviroSound {
         }
         // TODO: sound category
         if (((EnviroSound.mc.player == null)
-                || (EnviroSound.mc.level == null) || (y <= 0)
+                || (EnviroSound.mc.world == null) || (y <= 0)
                 //|| (soundCat == SoundCategory.RECORDS)
                 //|| (soundCat == SoundCategory.MUSIC)
                 )
@@ -1023,21 +1018,21 @@ public class EnviroSound {
         }
     }*/
 
-    private static Vec3f reflect(final Vec3f dir, final Vec3f normal) {
+    private static Vec3d reflect(final Vec3d dir, final Vec3d normal) {
         final double dot2 = dotProduct(dir, normal) * 2;
 
         final double x = dir.x - (dot2 * normal.x);
         final double y = dir.y - (dot2 * normal.y);
         final double z = dir.z - (dot2 * normal.z);
 
-        return Vec3f.method_1293(x, y, z);
+        return Vec3d.create(x, y, z);
     }
     
     static float clamp_float(float a, float b, float c) {
         return a < b ? b : (a > c ? c : a);
     }
 
-    public static double dotProduct(Vec3f a, Vec3f b) {
+    public static double dotProduct(Vec3d a, Vec3d b) {
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 
@@ -1347,9 +1342,9 @@ public class EnviroSound {
             EnviroSound.source_list.add(s);
         }
     }
-    
-    @EventListener
-    private static void init(Init event) {
+
+    @Override
+    public void onInitializeClient() {
         //ALC10.alcGetCurrentContext();
         Config.instance.init();
         log("Init Complete.");

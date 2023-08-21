@@ -18,7 +18,7 @@ import paulscode.sound.libraries.LibraryLWJGLOpenAL;
 @Environment(EnvType.CLIENT)
 public class MixinLibraryLWJGLOpenAL {
     @Inject(method = "loadSound(Lpaulscode/sound/FilenameURL;)Z", at = @At(value = "INVOKE", target = "Lpaulscode/sound/ICodec;cleanup()V", shift = At.Shift.AFTER), remap = false, locals = LocalCapture.CAPTURE_FAILHARD)
-    private void injectLoadSound(FilenameURL filenameURL, CallbackInfoReturnable cir, ICodec codec, SoundBuffer buffer) {
+    private void injectLoadSound(FilenameURL filenameURL, CallbackInfoReturnable<Boolean> cir, ICodec codec, SoundBuffer buffer) {
         buffer = EnviroSound.onLoadSound(buffer, filenameURL.getFilename());
     }
 

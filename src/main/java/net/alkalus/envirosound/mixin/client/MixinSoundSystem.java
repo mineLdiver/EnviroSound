@@ -9,12 +9,12 @@ import paulscode.sound.SoundSystem;
 @Mixin(SoundSystem.class)
 public class MixinSoundSystem {
 
-    @ModifyVariable(method = "newSource(ZLjava/lang/String;Ljava/net/URL;Ljava/lang/String;ZFFFIF)V", index = 9, at = @At("HEAD"), remap = false)
+    @ModifyVariable(method = "newSource(ZLjava/lang/String;Ljava/net/URL;Ljava/lang/String;ZFFFIF)V", index = 9, at = @At("HEAD"), remap = false, argsOnly = true)
     private int modAttenuation(int attenuation) {
         return EnviroSound.attenuationModel;
     }
 
-    @ModifyVariable(method = "newSource(ZLjava/lang/String;Ljava/net/URL;Ljava/lang/String;ZFFFIF)V", index = 10, at = @At("HEAD"), remap = false)
+    @ModifyVariable(method = "newSource(ZLjava/lang/String;Ljava/net/URL;Ljava/lang/String;ZFFFIF)V", index = 10, at = @At("HEAD"), remap = false, argsOnly = true)
     private float modRolloffFactor(float rolloffFactor) {
         return EnviroSound.globalRolloffFactor;
     }
