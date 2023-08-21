@@ -1,6 +1,6 @@
 # EnviroSound [b1.7.3]
 
-### This is severely bugged at this point, it won't run. It will be fixed later.
+### This is severely bugged at this point. It will be fixed later.
 
 A Minecraft mod that provides realistic sound attenuation, reverberation, and absorption through blocks.
 
